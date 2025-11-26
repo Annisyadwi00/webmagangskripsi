@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Logbook Mahasiswa – Portal Magang UNSIKA</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body onload="initPage()">
+
+  <div class="dashboard-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">Portal Magang UNSIKA</span>
+        <span class="brand-sub">Logbook Mahasiswa</span>
+      </div>
+
+      <div class="user-menu">
+        <span id="userName">Mahasiswa</span>
+        <div class="avatar-circle" id="userInitial">M</div>
+        <button class="btn btn-ghost" onclick="logout()">Keluar</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="dashboard-content" style="max-width: 680px;">
+
+      <h1 style="margin-bottom: 6px;">Logbook Magang</h1>
+      <p style="margin-top:0;color:var(--text-muted);font-size:13px;">
+        Unggah logbook mingguan dalam bentuk link Google Drive.
+      </p>
+
+      <!-- FORM TAMBAH LOGBOOK -->
+      <div class="auth-form" style="margin-top:24px;">
+
+        <div class="form-group">
+          <label>Judul / Mingguan</label>
+          <input id="judul" type="text" placeholder="Contoh: Logbook Minggu 1" />
+        </div>
+
+        <div class="form-group">
+          <label>Link Logbook Google Drive</label>
+          <input id="linkLogbook" type="text" placeholder="https://drive.google.com/..." />
+        </div>
+
+        <button onclick="tambahLogbook()" class="btn btn-primary" style="margin-top:10px;">
+          Tambah Logbook
+        </button>
+      </div>
+
+      <!-- LIST LOGBOOK -->
+      <h2 style="margin-top:30px;">Riwayat Logbook</h2>
+
+      <div id="logbookContainer" class="cards-grid" style="margin-top:12px;"></div>
+
+      <p id="emptyState" 
+         style="display:none; margin-top:18px; font-size:13px; color:var(--text-muted);">
+        Belum ada logbook yang kamu unggah.
+      </p>
+
+    </main>
+
+  </div>
+
+<script>
+/* INIT PAGE */
+function initPage() {
+  const name = localStorage.getItem("name") || "Mahasiswa";
+
+  document.getElementById("userName").innerText = name;
+  document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+
+  loadLogbook();
+}
+
+/* LOGOUT */
+function logout() {
+  localStorage.clear();
+  location.href = "login.html";
+}
+
+/* LOAD LOGBOOK LIST */
+async function loadLogbook() {
+  const container = document.getElementById("logbookContainer");
+  const emptyState = document.getElementById("emptyState");
+
+  container.innerHTML =
+    "<p style='font-size:13px;color:var(--text-muted);'>Memuat logbook...</p>";
+
+  const mahasiswaId = localStorage.getItem("userId");
+
+  try {
+    const res = await fetch(`http://localhost:3000/api/v1/logbook?mahasiswaId=${mahasiswaId}`);
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      container.innerHTML = "";
+      emptyState.style.display = "block";
+      return;
+    }
+
+    emptyState.style.display = "none";
+
+    container.innerHTML = data
+      .map(
+        item => `
+      <article class="job-card">
+
+        <div class="job-title">${item.judul}</div>
+
+        <p style="font-size:13px;margin-top:6px;">
+          <strong>Dokumen:</strong><br>
+          <a href="${item.link}" target="_blank" style="color:var(--primary);">
+            Buka Logbook
+          </a>
+        </p>
+
+        <div class="job-meta">
+          <span style="font-size:11px;color:var(--text-muted);">
+            ${new Date(item.createdAt).toLocaleDateString("id-ID")}
+          </span>
+        </div>
+
+        <div class="job-actions" style="margin-top:10px;">
+          <button class="btn btn-ghost" style="color:var(--danger);" onclick="hapus('${item.id}')">
+            Hapus
+          </button>
+        </div>
+
+      </article>
+    `).join("");
+
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "<p style='color:var(--danger);'>Gagal memuat logbook.</p>";
+  }
+}
+
+/* TAMBAH LOGBOOK */
+async function tambahLogbook() {
+  const judul = document.getElementById("judul").value.trim();
+  const link = document.getElementById("linkLogbook").value.trim();
+  const mahasiswaId = localStorage.getItem("userId");
+  const nama_mahasiswa = localStorage.getItem("name");
+
+  if (!judul || !link) {
+    alert("Semua field wajib diisi.");
+    return;
+  }
+
+  if (!link.includes("http")) {
+    alert("Link tidak valid.");
+    return;
+  }
+
+  const payload = {
+    id: "log_" + Date.now(),
+    mahasiswaId,
+    nama_mahasiswa,
+    judul,
+    link,
+  };
+
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/logbook", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      alert("Gagal menyimpan logbook.");
+      return;
+    }
+
+    alert("Logbook berhasil ditambahkan!");
+    loadLogbook();
+    document.getElementById("judul").value = "";
+    document.getElementById("linkLogbook").value = "";
+
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan.");
+  }
+}
+
+/* HAPUS LOGBOOK */
+async function hapus(id) {
+  if (!confirm("Yakin ingin menghapus logbook?")) return;
+
+  try {
+    await fetch(`http://localhost:3000/api/v1/logbook/${id}`, {
+      method: "DELETE",
+    });
+
+    loadLogbook();
+
+  } catch (err) {
+    console.error(err);
+    alert("Gagal menghapus logbook.");
+  }
+}
+
+</script>
+
+</body>
+</html>

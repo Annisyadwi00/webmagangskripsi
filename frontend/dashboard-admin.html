@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Admin – Portal Magang</title>
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <style>
+    /* Modal styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .modal {
+      background: white;
+      padding: 24px;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 18px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 18px;
+      gap: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 90px;
+      resize: none;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      outline: none;
+      background: #f9fafb;
+      transition: 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+     box-shadow: 0 0 0 1px rgba(31,111,235,0.18);
+      background: white;
+    }
+  </style>
+</head>
+
+<body onload="initPage()">
+
+  <div class="dashboard-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">Portal Magang UNSIKA</span>
+        <span class="brand-sub">Dashboard Admin</span>
+      </div>
+
+      <div class="user-menu">
+        <span id="userName">Admin</span>
+        <div class="avatar-circle" id="userInitial">A</div>
+        <button class="btn btn-ghost" onclick="logout()">Keluar</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="dashboard-content">
+
+      <!-- HEADING -->
+      <div class="page-heading">
+        <div>
+          <h1>Manajemen Lowongan Magang</h1>
+          <p>Tambah, edit, atau hapus lowongan magang.</p>
+        </div>
+
+        <button class="btn btn-primary" onclick="openModalTambah()">
+          Tambah Lowongan
+        </button>
+        <button class="btn btn-ghost" onclick="location.href='dashboard-admin-nilai.html'">
+  Rekap Nilai
+</button>
+
+      </div>
+
+      <!-- CHIP GROUP -->
+      <div class="chip-group">
+        <span class="chip">Admin Control</span>
+        <span class="chip">CRUD Lowongan</span>
+        <span class="chip">Update Real-time</span>
+      </div>
+
+      <!-- JOB LIST -->
+      <div id="jobsContainer" class="cards-grid" style="margin-top: 15px;">
+      </div>
+
+      <p id="emptyState" 
+         style="display:none; margin-top:18px; color:var(--text-muted); font-size:13px;">
+        Belum ada lowongan yang tersedia.
+      </p>
+
+    </main>
+  </div>
+
+  <!-- MODAL FORM -->
+  <div class="modal-backdrop" id="modalBox">
+    <div class="modal">
+
+      <h2 id="modalTitle">Tambah Lowongan</h2>
+
+      <div class="form-group">
+        <label>Judul Lowongan</label>
+        <input id="title" type="text" placeholder="Contoh: Frontend Developer Intern" />
+      </div>
+
+      <div class="form-group">
+        <label>Perusahaan</label>
+        <input id="company" type="text" placeholder="Contoh: PT Teknologi Jaya" />
+      </div>
+
+      <div class="form-group">
+        <label>Lokasi</label>
+        <input id="location" type="text" placeholder="Contoh: Jakarta" />
+      </div>
+
+      <div class="form-group">
+        <label>Deskripsi</label>
+        <textarea id="description" placeholder="Deskripsi singkat lowongan..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Link Website Resmi</label>
+        <input id="link" type="text" placeholder="https://..." />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" onclick="saveJob()">Simpan</button>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+let editingId = null;
+
+/* INIT PAGE */
+function initPage() {
+  const name = localStorage.getItem("name") || "Admin";
+  document.getElementById("userName").innerText = name;
+  document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+
+  loadJobs();
+}
+
+/* LOGOUT */
+function logout() {
+  localStorage.clear();
+  location.href = "login.html";
+}
+
+/* LOAD JOB LIST */
+async function loadJobs() {
+  const container = document.getElementById("jobsContainer");
+  const emptyState = document.getElementById("emptyState");
+
+  container.innerHTML =
+    "<p style='font-size:13px;color:var(--text-muted);'>Memuat lowongan...</p>";
+  emptyState.style.display = "none";
+
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/jobs");
+    const jobs = await res.json();
+
+    if (!Array.isArray(jobs) || jobs.length === 0) {
+      container.innerHTML = "";
+      emptyState.style.display = "block";
+      return;
+    }
+
+    container.innerHTML = jobs.map(job => `
+      <article class="job-card">
+
+        <div class="job-company">${job.company}</div>
+        <div class="job-title">${job.title}</div>
+
+        <p style="font-size:13px;margin-top:6px;">
+          ${job.description ? job.description.substring(0, 80) : ""}...
+        </p>
+
+        <div class="job-meta">
+          <span>${job.location}</span>
+          <span style="font-size:11px; color:var(--text-muted);">
+            ${new Date(job.createdAt).toLocaleDateString("id-ID")}
+          </span>
+        </div>
+
+        <div class="job-actions" style="margin-top:10px;">
+          <button class="btn btn-primary" onclick="editJob('${job.id}')">Edit</button>
+          <button class="btn btn-ghost" style="color:var(--danger);"
+                  onclick="deleteJob('${job.id}')">Hapus</button>
+        </div>
+
+      </article>
+    `).join("");
+
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "<p style='color:var(--danger);'>Gagal memuat lowongan.</p>";
+  }
+}
+
+/* OPEN MODAL - TAMBAH */
+function openModalTambah() {
+  editingId = null;
+  resetForm();
+  document.getElementById("modalTitle").innerText = "Tambah Lowongan";
+  document.getElementById("modalBox").style.display = "flex";
+}
+
+/* OPEN MODAL - EDIT */
+async function editJob(id) {
+  editingId = id;
+  document.getElementById("modalTitle").innerText = "Edit Lowongan";
+
+  const res = await fetch(`http://localhost:3000/api/v1/jobs/${id}`);
+  const job = await res.json();
+
+  document.getElementById("title").value = job.title;
+  document.getElementById("company").value = job.company;
+  document.getElementById("location").value = job.location;
+  document.getElementById("description").value = job.description;
+  document.getElementById("link").value = job.link;
+
+  document.getElementById("modalBox").style.display = "flex";
+}
+
+/* SIMPAN JOB */
+async function saveJob() {
+  const payload = {
+    title: document.getElementById("title").value.trim(),
+    company: document.getElementById("company").value.trim(),
+    location: document.getElementById("location").value.trim(),
+    description: document.getElementById("description").value.trim(),
+    link: document.getElementById("link").value.trim(),
+  };
+
+  if (!payload.title || !payload.company || !payload.location || !payload.link) {
+    alert("Semua field wajib diisi.");
+    return;
+  }
+
+  const url = editingId
+    ? `http://localhost:3000/api/v1/jobs/${editingId}`
+    : "http://localhost:3000/api/v1/jobs";
+
+  const method = editingId ? "PUT" : "POST";
+
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    alert("Gagal menyimpan data.");
+    return;
+  }
+
+  closeModal();
+  loadJobs();
+}
+
+/* HAPUS JOB */
+async function deleteJob(id) {
+  if (!confirm("Yakin ingin menghapus lowongan ini?")) return;
+
+  const res = await fetch(`http://localhost:3000/api/v1/jobs/${id}`, {
+    method: "DELETE"
+  });
+
+  if (!res.ok) {
+    alert("Gagal menghapus data.");
+    return;
+  }
+
+  loadJobs();
+}
+
+/* CLOSE MODAL */
+function closeModal() {
+  document.getElementById("modalBox").style.display = "none";
+}
+
+/* RESET FORM */
+function resetForm() {
+  document.getElementById("title").value = "";
+  document.getElementById("company").value = "";
+  document.getElementById("location").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("link").value = "";
+}
+
+</script>
+
+</body>
+</html>

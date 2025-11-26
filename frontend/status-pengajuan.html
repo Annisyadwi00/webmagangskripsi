@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Status Magang • Portal Magang</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+  <div class="navbar">
+    <h2>Status Magang Mahasiswa</h2>
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container">
+
+    <!-- STATUS MAGANG -->
+    <div class="card">
+      <h2>Status Pengajuan Magang</h2>
+      <p>Status: <strong id="statusMagang">-</strong></p>
+      <p>Posisi: <span id="posisiMagang">-</span></p>
+      <p>Tempat Magang: <span id="tempatMagang">-</span></p>
+      <p>Tanggal Mulai: <span id="tglMulai">-</span></p>
+      <p>Tanggal Selesai: <span id="tglSelesai">-</span></p>
+    </div>
+
+    <!-- DOSEN PEMBIMBING -->
+    <div class="card">
+      <h2>Dosen Pembimbing</h2>
+      <p>Nama Dosen: <strong id="namaDosen">-</strong></p>
+      <p>NIP: <span id="nipDosen">-</span></p>
+    </div>
+
+    <!-- PROGRESS MAGANG -->
+    <div class="card">
+      <h2>Progress Magang</h2>
+      <p>Total Logbook: <span id="logbookCount">0</span> / 8 Minggu</p>
+
+      <div class="progress-bar">
+        <div id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- LAPORAN AKHIR -->
+    <div class="card">
+      <h2>Laporan Akhir</h2>
+      <p>Status Laporan: <strong id="statusLaporan">-</strong></p>
+      <p>Link Laporan: <span id="linkLaporanAkhir">-</span></p>
+    </div>
+
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Silakan login ulang");
+      location.href = "login.html";
+    }
+
+    async function loadStatus() {
+      const res = await fetch("http://localhost:3000/api/v1/magang/me", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await res.json();
+
+      document.getElementById("statusMagang").textContent = data.status ?? "-";
+      document.getElementById("posisiMagang").textContent = data.posisi ?? "-";
+      document.getElementById("tempatMagang").textContent = data.tempat ?? "-";
+      document.getElementById("tglMulai").textContent = data.tgl_mulai ?? "-";
+      document.getElementById("tglSelesai").textContent = data.tgl_selesai ?? "-";
+
+      loadDosen(data.dosen_id);
+      loadLogbookProgress();
+      loadLaporanAkhir();
+    }
+
+    async function loadDosen(id) {
+      const res = await fetch(`http://localhost:3000/api/v1/dosen/${id}`, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await res.json();
+
+      document.getElementById("namaDosen").textContent = data.nama ?? "-";
+      document.getElementById("nipDosen").textContent = data.nip ?? "-";
+    }
+
+    async function loadLogbookProgress() {
+      const res = await fetch("http://localhost:3000/api/v1/logbook/me", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const logbooks = await res.json();
+
+      const count = logbooks.length;
+      const progress = (count / 8) * 100;
+
+      document.getElementById("logbookCount").textContent = count;
+
+      document.getElementById("progressFill").style.width = progress + "%";
+    }
+
+    async function loadLaporanAkhir() {
+      const res = await fetch("http://localhost:3000/api/v1/laporan/me", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const lap = await res.json();
+
+      if (lap.length === 0) {
+        document.getElementById("statusLaporan").textContent = "Belum Upload";
+        document.getElementById("linkLaporanAkhir").textContent = "-";
+      } else {
+        document.getElementById("statusLaporan").textContent = "Sudah Upload";
+        document.getElementById("linkLaporanAkhir").innerHTML = `<a href="${lap[0].link}" target="_blank">Buka Laporan</a>`;
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      location.href = "login.html";
+    }
+
+    loadStatus();
+  </script>
+
+</body>
+</html>

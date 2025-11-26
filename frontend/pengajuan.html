@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ajukan Magang – Portal Magang</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body onload="initForm()">
+
+  <div class="dashboard-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">Portal Magang UNSIKA</span>
+        <span class="brand-sub">Form Pengajuan</span>
+      </div>
+
+      <div class="user-menu">
+        <span id="userName">Mahasiswa</span>
+        <div class="avatar-circle" id="userInitial">M</div>
+        <button class="btn btn-ghost" onclick="logout()">Keluar</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="dashboard-content" style="max-width: 620px;">
+
+      <h1 style="margin-bottom: 6px;">Form Pengajuan Magang</h1>
+
+      <p style="margin-top:0;color:var(--text-muted);font-size:13px;">
+        Isi data berikut dan lampirkan link Google Drive dokumen pengajuan magang.
+      </p>
+
+      <!-- FORM -->
+      <div class="auth-form" style="margin-top:20px;">
+
+        <div class="form-group">
+          <label>Posisi Magang</label>
+          <input id="posisi" type="text" placeholder="Contoh: Frontend Developer" />
+        </div>
+
+        <div class="form-group">
+          <label>Perusahaan</label>
+          <input id="perusahaan" type="text" placeholder="Contoh: PT Teknologi Jaya" />
+        </div>
+
+        <div class="form-group">
+          <label>Link Dokumen Google Drive</label>
+          <input id="linkGDrive" type="text" placeholder="https://drive.google.com/..." />
+        </div>
+
+        <button onclick="ajukanMagang()" class="btn btn-primary" style="margin-top:12px;">
+          Kirim Pengajuan
+        </button>
+
+      </div>
+
+    </main>
+  </div>
+
+<script>
+/* INIT PAGE */
+function initForm() {
+  const name = localStorage.getItem("name") || "Mahasiswa";
+
+  document.getElementById("userName").innerText = name;
+  document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+}
+
+/* LOGOUT */
+function logout() {
+  localStorage.clear();
+  location.href = "login.html";
+}
+
+/* SUBMIT FORM */
+async function ajukanMagang() {
+  const posisi = document.getElementById("posisi").value.trim();
+  const perusahaan = document.getElementById("perusahaan").value.trim();
+  const link_dokumen = document.getElementById("linkGDrive").value.trim();
+
+  if (!posisi || !perusahaan || !link_dokumen) {
+    alert("Semua field harus diisi.");
+    return;
+  }
+
+  if (!link_dokumen.includes("http")) {
+    alert("Link Google Drive tidak valid.");
+    return;
+  }
+
+  const payload = {
+    mahasiswaId: localStorage.getItem("userId"),
+    nama_mahasiswa: localStorage.getItem("name"),
+    email: localStorage.getItem("email"),
+    posisi,
+    perusahaan,
+    link_dokumen
+  };
+
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/pengajuan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.msg || data.error || "Pengajuan gagal.");
+      return;
+    }
+
+    alert("Pengajuan berhasil dikirim!");
+    location.href = "status-pengajuan.html";
+
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan saat mengirim pengajuan.");
+  }
+}
+</script>
+
+</body>
+</html>

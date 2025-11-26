@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Dosen – Portal Magang</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body onload="initPage()">
+
+  <div class="dashboard-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">Portal Magang UNSIKA</span>
+        <span class="brand-sub">Dashboard Dosen</span>
+      </div>
+
+      <div class="user-menu">
+        <span id="userName">Dosen</span>
+        <div class="avatar-circle" id="userInitial">D</div>
+        <button class="btn btn-ghost" onclick="logout()">Keluar</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="dashboard-content">
+
+      <div class="page-heading">
+        <div>
+          <h1>Pengajuan Mahasiswa</h1>
+          <p>Review, verifikasi, dan berikan keputusan atas pengajuan magang mahasiswa.</p>
+        </div>
+
+        <div class="chip-group">
+          <span class="chip">Verifikasi Dosen Pembimbing</span>
+          <span class="chip">Approve / Reject</span>
+          <span class="chip">Data Real-Time</span>
+        </div>
+      </div>
+
+      <div id="pengajuanContainer" class="cards-grid" style="margin-top:15px;"></div>
+
+      <p id="emptyState"
+         style="display:none; margin-top:18px; font-size:13px; color:var(--text-muted);">
+        Belum ada pengajuan yang perlu diverifikasi.
+      </p>
+
+    </main>
+  </div>
+
+<script>
+/* INIT PAGE */
+function initPage() {
+  const name = localStorage.getItem("name") || "Dosen";
+
+  document.getElementById("userName").innerText = name;
+  document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+
+  loadPengajuan();
+}
+
+/* LOGOUT */
+function logout() {
+  localStorage.clear();
+  location.href = "login.html";
+}
+
+/* LOAD ALL PENGAJUAN */
+async function loadPengajuan() {
+  const container = document.getElementById("pengajuanContainer");
+  const emptyState = document.getElementById("emptyState");
+
+  container.innerHTML =
+    "<p style='font-size:13px;color:var(--text-muted);'>Memuat data pengajuan...</p>";
+
+  emptyState.style.display = "none";
+
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/pengajuan");
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error("Format data tidak valid");
+    }
+
+    if (data.length === 0) {
+      container.innerHTML = "";
+      emptyState.style.display = "block";
+      return;
+    }
+
+    container.innerHTML = data.map(item => `
+      <article class="job-card">
+
+        <div class="job-title" style="font-size:17px;">${item.nama_mahasiswa}</div>
+        <div class="job-company">${item.email}</div>
+
+        <p style="font-size:14px; margin-top:6px;">
+          <strong>Posisi:</strong> ${item.posisi} <br>
+          <strong>Perusahaan:</strong> ${item.perusahaan}
+        </p>
+
+        <p style="font-size:13px; margin-top:6px;">
+          <strong>Dokumen:</strong><br>
+          <a href="${item.link_dokumen}" target="_blank" style="color:var(--primary);">
+            Lihat Dokumen
+          </a>
+        </p>
+
+        <div class="job-meta">
+          <span>
+            Status: <strong style="color:${statusColor(item.status)};">
+              ${item.status}
+            </strong>
+          </span>
+
+          <span style="font-size:11px;">
+            ${new Date(item.createdAt).toLocaleDateString("id-ID")}
+          </span>
+        </div>
+
+        <div class="job-actions" style="margin-top:10px;">
+          <button class="btn btn-primary" onclick="approve('${item.id}')">
+            Setujui
+          </button>
+
+          <button class="btn btn-ghost"
+                  style="color:var(--danger);" 
+                  onclick="reject('${item.id}')">
+            Tolak
+          </button>
+        </div>
+
+      </article>
+    `).join("");
+
+  } catch (err) {
+    container.innerHTML = "<p style='color:var(--danger);'>Gagal memuat pengajuan.</p>";
+    console.error(err);
+  }
+}
+
+/* WARNA STATUS */
+function statusColor(status) {
+  if (status === "disetujui") return "green";
+  if (status === "ditolak") return "var(--danger)";
+  return "#6b7280"; // pending
+}
+
+/* APPROVE */
+async function approve(id) {
+  if (!confirm("Yakin ingin menyetujui pengajuan ini?")) return;
+
+  await fetch(`http://localhost:3000/api/v1/pengajuan/${id}/approve`, {
+    method: "PATCH"
+  });
+
+  loadPengajuan();
+}
+
+/* REJECT */
+async function reject(id) {
+  if (!confirm("Yakin ingin menolak pengajuan ini?")) return;
+
+  await fetch(`http://localhost:3000/api/v1/pengajuan/${id}/reject`, {
+    method: "PATCH"
+  });
+
+  loadPengajuan();
+}
+
+</script>
+
+</body>
+</html>

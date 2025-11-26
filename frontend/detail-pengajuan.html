@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Detail Pengajuan – Portal Magang</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body onload="initDetail()">
+
+  <div class="dashboard-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">Portal Magang UNSIKA</span>
+        <span class="brand-sub">Detail Pengajuan</span>
+      </div>
+
+      <div class="user-menu">
+        <span id="userName">Mahasiswa</span>
+        <div class="avatar-circle" id="userInitial">M</div>
+        <button class="btn btn-ghost" onclick="back()">Kembali</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="dashboard-content" style="max-width:650px;">
+
+      <h1>Detail Pengajuan Magang</h1>
+      <p style="margin-top:0; font-size:13px; color:var(--text-muted);">
+        Informasi lengkap dari pengajuan yang kamu ajukan.
+      </p>
+
+      <div id="detailBox"
+           style="margin-top:20px; background:white; padding:24px; border-radius:20px; box-shadow:var(--shadow-soft);">
+        Memuat detail...
+      </div>
+
+    </main>
+
+  </div>
+
+<script>
+/* INIT PAGE */
+function initDetail() {
+  const name = localStorage.getItem("name") || "Mahasiswa";
+
+  document.getElementById("userName").innerText = name;
+  document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+
+  loadDetail();
+}
+
+/* TOMBOL KEMBALI */
+function back() {
+  history.back();
+}
+
+/* LOAD DETAIL PENGAJUAN */
+async function loadDetail() {
+  const id = localStorage.getItem("detailPengajuanId");
+  const box = document.getElementById("detailBox");
+
+  try {
+    const res = await fetch(`http://localhost:3000/api/v1/pengajuan/${id}`);
+    const p = await res.json();
+
+    if (!res.ok || !p) {
+      box.innerHTML = "<p style='color:var(--danger);'>Gagal memuat detail.</p>";
+      return;
+    }
+
+    box.innerHTML = `
+      <h2 style="margin-top:0; font-size:22px;">${p.posisi}</h2>
+
+      <div style="margin-bottom:10px; color:var(--text-muted); font-size:14px;">
+        ${p.perusahaan}
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <strong>Status:</strong><br>
+        <span style="color:${statusColor(p.status)}; font-weight:600; font-size:14px;">
+          ${p.status}
+        </span>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <strong>Tanggal Pengajuan:</strong><br>
+        ${new Date(p.createdAt).toLocaleDateString("id-ID")}
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <strong>Link Dokumen Google Drive:</strong><br>
+        <a href="${p.link_dokumen}" target="_blank" style="color:var(--primary); font-size:14px;">
+          Buka Dokumen
+        </a>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:10px;" onclick="back()">
+        Kembali
+      </button>
+    `;
+  } catch (err) {
+    console.error(err);
+    box.innerHTML = "<p style='color:var(--danger);'>Terjadi kesalahan saat memuat detail.</p>";
+  }
+}
+
+/* WARNA STATUS */
+function statusColor(status) {
+  if (status === "disetujui") return "green";
+  if (status === "ditolak") return "var(--danger)";
+  return "#6b7280"; // pending
+}
+</script>
+
+</body>
+</html>

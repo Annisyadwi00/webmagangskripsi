@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload Laporan Akhir • Portal Magang</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+  <div class="navbar">
+    <h2>Laporan Akhir Magang • Mahasiswa</h2>
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container">
+
+    <!-- FORM INPUT LINK -->
+    <div class="card">
+      <h2>Input Link Laporan (Google Drive)</h2>
+
+      <label>Link Google Drive</label>
+      <input type="text" id="linkLaporan" placeholder="Masukkan link Google Drive laporan akhir...">
+
+      <button class="btn" onclick="kirimLink()">Simpan Link</button>
+      <p style="font-size: 13px; color: grey;">
+        *Pastikan link sudah di-set “Anyone with the link can view”
+      </p>
+    </div>
+
+    <!-- LIST LAPORAN -->
+    <div class="card">
+      <h2>Riwayat Link Laporan</h2>
+      <div id="listLaporan"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Silakan login ulang");
+      location.href = "login.html";
+    }
+
+    // Load riwayat link laporan
+    async function loadLaporan() {
+      const res = await fetch("http://localhost:3000/api/v1/laporan/me", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await res.json();
+
+      const el = document.getElementById("listLaporan");
+      el.innerHTML = "";
+
+      data.forEach(l => {
+        el.innerHTML += `
+          <div class="card">
+            <p><strong>Link:</strong> <a href="${l.link}" target="_blank">${l.link}</a></p>
+            <button class="btn" onclick="hapusLaporan('${l.id}')">Hapus</button>
+          </div>
+        `;
+      });
+    }
+
+    // Menyimpan link laporan
+    async function kirimLink() {
+      const link = document.getElementById("linkLaporan").value;
+
+      if (!link || !link.includes("http")) {
+        alert("Masukkan link Google Drive yang valid.");
+        return;
+      }
+
+      await fetch("http://localhost:3000/api/v1/laporan", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ link })
+      });
+
+      loadLaporan();
+    }
+
+    // Hapus link laporan
+    async function hapusLaporan(id) {
+      if (!confirm("Yakin ingin menghapus link laporan ini?")) return;
+
+      await fetch(`http://localhost:3000/api/v1/laporan/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      loadLaporan();
+    }
+
+    function logout() {
+      localStorage.clear();
+      location.href = "login.html";
+    }
+
+    loadLaporan();
+  </script>
+
+</body>
+</html>

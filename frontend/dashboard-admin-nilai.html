@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rekap Nilai Mahasiswa – Portal Magang UNSIKA</title>
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- SheetJS (XLSX) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body onload="initPage()">
+
+  <div class="dashboard-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">Portal Magang UNSIKA</span>
+        <span class="brand-sub">Rekap Nilai Mahasiswa</span>
+      </div>
+
+      <div class="user-menu">
+        <span id="userName">Admin</span>
+        <div class="avatar-circle" id="userInitial">A</div>
+        <button class="btn btn-ghost" onclick="back()">Kembali</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="dashboard-content" style="max-width: 900px;">
+
+      <div class="page-heading" style="justify-content: space-between; align-items:center;">
+        <div>
+          <h1>Rekap Nilai Mahasiswa</h1>
+          <p style="margin-top:0;color:var(--text-muted);font-size:13px;">
+            Berikut daftar nilai akhir mahasiswa.
+          </p>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="exportCSV()">
+            Export CSV
+          </button>
+          <button class="btn btn-primary" onclick="exportExcel()">
+            Export Excel (XLSX)
+          </button>
+        </div>
+      </div>
+
+      <div id="nilaiContainer" class="cards-grid" style="margin-top:20px;"></div>
+
+      <p id="emptyState"
+         style="display:none; margin-top:18px; font-size:13px; color:var(--text-muted);">
+        Belum ada nilai yang masuk.
+      </p>
+
+    </main>
+  </div>
+
+<script>
+
+let nilaiGlobal = [];
+
+/* INIT */
+async function initPage() {
+  const name = localStorage.getItem("name") || "Admin";
+  document.getElementById("userName").innerText = name;
+  document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+
+  loadNilai();
+}
+
+function back() {
+  location.href = "dashboard-admin.html";
+}
+
+/* LOAD DATA */
+async function loadNilai() {
+  const container = document.getElementById("nilaiContainer");
+  const emptyState = document.getElementById("emptyState");
+
+  container.innerHTML =
+    "<p style='font-size:13px;color:var(--text-muted);'>Memuat nilai...</p>";
+
+  try {
+    const nilaiRes = await fetch("http://localhost:3000/api/v1/nilai");
+    const nilaiData = await nilaiRes.json();
+
+    nilaiGlobal = nilaiData;  // simpan data global
+
+    if (!Array.isArray(nilaiData) || nilaiData.length === 0) {
+      container.innerHTML = "";
+      emptyState.style.display = "block";
+      return;
+    }
+
+    emptyState.style.display = "none";
+
+    container.innerHTML = nilaiData
+      .map(
+        n => `
+        <article class="job-card" style="padding:20px;">
+
+          <div class="job-title" style="font-size:18px;">${n.nama_mahasiswa}</div>
+
+          <p style="font-size:14px;margin-top:6px;">
+            <strong>Nilai Akhir:</strong>
+            <span style="font-weight:600;color:var(--primary-dark);font-size:18px;">
+              ${n.nilai}
+            </span>
+          </p>
+
+          <p style="font-size:13px;margin-top:4px;">
+            <strong>Catatan:</strong><br>
+            <span style="color:#555;">
+              ${n.catatan || "-"}
+            </span>
+          </p>
+
+          <p style="font-size:13px;margin-top:4px;">
+            <strong>Link Nilai:</strong><br>
+            <a href="${n.linkNilai}" target="_blank" style="color:var(--primary);">
+              Buka Dokumen Nilai
+            </a>
+          </p>
+
+          <div class="job-meta">
+            <span style="font-size:11px;color:var(--text-muted);">
+              Dinilai pada: ${new Date(n.createdAt).toLocaleDateString("id-ID")}
+            </span>
+          </div>
+
+        </article>
+    `
+      )
+      .join("");
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `<p style="color:var(--danger);">Gagal memuat nilai.</p>`;
+  }
+}
+
+/* ====================== EXPORT CSV ====================== */
+function exportCSV() {
+  if (!nilaiGlobal.length) return alert("Tidak ada data untuk diexport.");
+
+  const header = [
+    "Nama Mahasiswa",
+    "Nilai",
+    "Catatan",
+    "Link Nilai",
+    "Tanggal Penilaian"
+  ];
+
+  const rows = nilaiGlobal.map(n => [
+    n.nama_mahasiswa,
+    n.nilai,
+    n.catatan ? `"${n.catatan.replace(/"/g, '""')}"` : "-",
+    n.linkNilai,
+    new Date(n.createdAt).toLocaleDateString("id-ID")
+  ]);
+
+  const csv =
+    "data:text/csv;charset=utf-8," +
+    [header.join(","), ...rows.map(r => r.join(","))].join("\n");
+
+  const encodedUri = encodeURI(csv);
+  const a = document.createElement("a");
+  a.href = encodedUri;
+  a.download = "rekap_nilai_mahasiswa.csv";
+  a.click();
+}
+
+/* ====================== EXPORT EXCEL (XLSX) ====================== */
+function exportExcel() {
+  if (!nilaiGlobal.length) return alert("Tidak ada data untuk diexport.");
+
+  const wsData = [
+    ["Nama Mahasiswa", "Nilai", "Catatan", "Link Nilai", "Tanggal Penilaian"],
+    ...nilaiGlobal.map(n => [
+      n.nama_mahasiswa,
+      n.nilai,
+      n.catatan || "-",
+      n.linkNilai,
+      new Date(n.createdAt).toLocaleDateString("id-ID")
+    ])
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Nilai");
+
+  XLSX.writeFile(workbook, "rekap_nilai_mahasiswa.xlsx");
+}
+
+</script>
+
+</body>
+</html>

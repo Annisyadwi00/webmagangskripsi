@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Admin – Summary Portal Magang</title>
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <style>
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 18px;
+      margin-top: 25px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 22px;
+      border-radius: 18px;
+      box-shadow: var(--shadow-soft);
+      border-left: 5px solid var(--primary);
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      margin-top: 6px;
+      color: var(--primary-dark);
+    }
+
+    .quick-actions {
+      margin-top: 32px;
+    }
+
+    .quick-actions .btn {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 15px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+  </style>
+</head>
+
+<body onload="initPage()">
+
+  <div class="dashboard-shell">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">Portal Magang UNSIKA</span>
+        <span class="brand-sub">Dashboard Admin – Summary</span>
+      </div>
+
+      <div class="user-menu">
+        <span id="userName">Admin</span>
+        <div class="avatar-circle" id="userInitial">A</div>
+        <button class="btn btn-ghost" onclick="logout()">Keluar</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="dashboard-content" style="max-width:960px;">
+
+      <h1>Dashboard Summary</h1>
+      <p style="margin-top:0;color:var(--text-muted);font-size:13px;">
+        Ringkasan data mahasiswa, pengajuan, logbook, dan penilaian.
+      </p>
+
+      <!-- STATISTICS -->
+      <div class="stats-grid">
+        
+        <div class="stat-card">
+          <div>Total Mahasiswa</div>
+          <div id="totalMahasiswa" class="stat-value">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div>Pengajuan Pending</div>
+          <div id="pendingCount" class="stat-value">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div>Pengajuan Disetujui</div>
+          <div id="approvedCount" class="stat-value">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div>Pengajuan Ditolak</div>
+          <div id="rejectedCount" class="stat-value">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div>Nilai Sudah Diberikan</div>
+          <div id="nilaiCount" class="stat-value">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div>Total Logbook</div>
+          <div id="logbookCount" class="stat-value">0</div>
+        </div>
+
+      </div>
+
+      <!-- QUICK ACTION BUTTONS -->
+      <div class="quick-actions">
+        <button class="btn btn-primary" onclick="go('dashboard-admin.html')">Kelola Lowongan</button>
+        <button class="btn btn-primary" onclick="go('dashboard-admin-nilai.html')">Rekap Nilai</button>
+        <button class="btn btn-primary" onclick="go('pengajuan-admin.html')">Daftar Pengajuan</button>
+        <button class="btn btn-primary" onclick="go('logbook-admin.html')">Daftar Logbook</button>
+      </div>
+
+    </main>
+
+  </div>
+
+<script>
+
+/* INIT PAGE */
+async function initPage() {
+  const name = localStorage.getItem("name") || "Admin";
+  document.getElementById("userName").innerText = name;
+  document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+
+  loadSummary();
+}
+
+function logout() {
+  localStorage.clear();
+  location.href = "login.html";
+}
+
+function go(page) {
+  location.href = page;
+}
+
+/* LOAD SUMMARY */
+async function loadSummary() {
+
+  // GET PENGAJUAN
+  const pengRes = await fetch("http://localhost:3000/api/v1/pengajuan");
+  const pengajuan = await pengRes.json();
+
+  // GET NILAI
+  const nilaiRes = await fetch("http://localhost:3000/api/v1/nilai");
+  const nilai = await nilaiRes.json();
+
+  // GET LOGBOOK
+  const logRes = await fetch("http://localhost:3000/api/v1/logbook");
+  let logbook = [];
+  if (logRes.ok) logbook = await logRes.json();
+
+  // SET STATISTICS
+  document.getElementById("totalMahasiswa").innerText = new Set(pengajuan.map(p => p.email)).size;
+  document.getElementById("pendingCount").innerText = pengajuan.filter(p => p.status === "pending").length;
+  document.getElementById("approvedCount").innerText = pengajuan.filter(p => p.status === "disetujui").length;
+  document.getElementById("rejectedCount").innerText = pengajuan.filter(p => p.status === "ditolak").length;
+  document.getElementById("nilaiCount").innerText = nilai.length;
+  document.getElementById("logbookCount").innerText = Array.isArray(logbook) ? logbook.length : 0;
+}
+
+</script>
+
+</body>
+</html>

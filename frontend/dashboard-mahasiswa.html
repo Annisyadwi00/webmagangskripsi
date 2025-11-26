@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Mahasiswa – Portal Magang</title>
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <style>
+    .notif-box {
+      background: var(--primary-soft);
+      border-left: 4px solid var(--primary);
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .notif-success {
+      border-color: #16a34a;
+      background: #d1fae5;
+    }
+    .notif-error {
+      border-color: #dc2626;
+      background: #fee2e2;
+    }
+    .notif-info {
+      border-color: #0284c7;
+      background: #e0f2fe;
+    }
+  </style>
+</head>
+
+<body onload="initPage()">
+  <div class="dashboard-shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-title">Portal Magang UNSIKA</span>
+        <span class="brand-sub">Dashboard Mahasiswa</span>
+      </div>
+
+      <div class="user-menu">
+        <span id="userName">Mahasiswa</span>
+        <div class="avatar-circle" id="userInitial">M</div>
+        <button class="btn btn-ghost" onclick="logout()">Keluar</button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="dashboard-content">
+
+      <!-- NOTIFIKASI -->
+      <div id="notifBox" class="notif-box"></div>
+
+      <div class="page-heading">
+        <div>
+          <h1>Lowongan Magang</h1>
+          <p>Daftar langsung ke website resmi perusahaan.</p>
+        </div>
+
+        <button class="btn btn-primary" onclick="goPengajuan()">
+          Ajukan Magang
+        </button>
+      </div>
+
+      <div id="jobsContainer" class="cards-grid"></div>
+
+      <p id="emptyState"
+         style="margin-top:18px;font-size:13px;color:var(--text-muted);display:none;">
+        Belum ada lowongan.
+      </p>
+
+    </main>
+  </div>
+
+<script>
+function initPage() {
+  const name = localStorage.getItem("name") || "Mahasiswa";
+  document.getElementById("userName").innerText = name;
+  document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+
+  checkNotifikasi();
+  loadJobs();
+}
+
+function logout() {
+  localStorage.clear();
+  location.href = "login.html";
+}
+
+function goPengajuan() {
+  location.href = "pengajuan.html";
+}
+
+/* ============================
+   NOTIFIKASI STATUS
+============================ */
+async function checkNotifikasi() {
+  const notifBox = document.getElementById("notifBox");
+  const email = localStorage.getItem("email");
+
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/pengajuan");
+    const data = await res.json();
+
+    // cari pengajuan milik mahasiswa
+    const my = data.find(p => p.email === email);
+
+    if (!my) return; // belum pernah ajukan → no notif
+
+    // NOTIF berdasarkan status:
+    if (my.status === "pending") {
+      notifBox.classList.add("notif-info");
+      notifBox.innerHTML = "Pengajuan kamu sedang dalam proses.";
+      notifBox.style.display = "block";
+    }
+    else if (my.status === "disetujui") {
+      notifBox.classList.add("notif-success");
+      notifBox.innerHTML = "Pengajuan magang kamu telah <strong>disetujui!</strong>";
+      notifBox.style.display = "block";
+    }
+    else if (my.status === "ditolak") {
+      notifBox.classList.add("notif-error");
+      notifBox.innerHTML = "Pengajuan magang kamu <strong>ditolak.</strong>";
+      notifBox.style.display = "block";
+    }
+
+    // CEK apakah nilai sudah keluar
+    const nilaiRes = await fetch(`http://localhost:3000/api/v1/nilai/${my.id}`);
+    if (nilaiRes.ok) {
+      notifBox.classList.add("notif-success");
+      notifBox.innerHTML = "Nilai akhir magang kamu sudah tersedia! 🎉";
+      notifBox.style.display = "block";
+    }
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
+/* ============================
+   LOAD LOWONGAN
+============================ */
+async function loadJobs() {
+  const container = document.getElementById("jobsContainer");
+  const emptyState = document.getElementById("emptyState");
+
+  container.innerHTML = "<p style='font-size:13px;color:var(--text-muted);'>Memuat lowongan...</p>";
+  emptyState.style.display = "none";
+
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/jobs");
+    const jobs = await res.json();
+
+    if (!Array.isArray(jobs) || jobs.length === 0) {
+      container.innerHTML = "";
+      emptyState.style.display = "block";
+      return;
+    }
+
+    container.innerHTML = jobs.map(job => `
+      <article class="job-card">
+        <div class="job-company">${job.company}</div>
+        <div class="job-title">${job.title}</div>
+
+        <div style="font-size:13px;margin-top:4px;">
+          ${job.description.substring(0,110)}...
+        </div>
+
+        <div class="job-meta">
+          <span>${job.location}</span>
+          <span style="font-size:11px;color:var(--text-muted);">
+            ${new Date(job.createdAt).toLocaleDateString("id-ID")}
+          </span>
+        </div>
+
+        <div class="job-actions">
+          <span class="badge-pill">Sumber eksternal</span>
+          <button class="btn btn-primary" onclick="daftar('${job.link}')">
+            Daftar
+          </button>
+        </div>
+      </article>
+    `).join("");
+
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "<p style='color:var(--danger);'>Gagal memuat lowongan.</p>";
+  }
+}
+
+function daftar(link) {
+  if (!link) return alert("Link belum tersedia.");
+  window.open(link, "_blank");
+}
+</script>
+
+</body>
+</html>
