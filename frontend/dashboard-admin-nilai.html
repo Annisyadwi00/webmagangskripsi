@@ -58,18 +58,20 @@
     </main>
   </div>
 
-<script>
+<script type="module">
+import { apiRequest } from "./src/apiService.js";
+import { requireAuth } from "./src/auth.js";
 
 let nilaiGlobal = [];
+const auth = requireAuth(["admin"]);
+if (!auth) return;
 
-/* INIT */
-async function initPage() {
-  const name = localStorage.getItem("name") || "Admin";
+  const name = auth.name || "Admin";
   document.getElementById("userName").innerText = name;
   document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
 
   loadNilai();
-}
+
 
 function back() {
   location.href = "dashboard-admin.html";
@@ -84,10 +86,9 @@ async function loadNilai() {
     "<p style='font-size:13px;color:var(--text-muted);'>Memuat nilai...</p>";
 
   try {
-    const nilaiRes = await fetch("http://localhost:3000/api/v1/nilai");
-    const nilaiData = await nilaiRes.json();
+    const nilaiData = await apiRequest("/nilai");
 
-    nilaiGlobal = nilaiData;  // simpan data global
+    nilaiGlobal = nilaiData || []; // simpan data global
 
     if (!Array.isArray(nilaiData) || nilaiData.length === 0) {
       container.innerHTML = "";
@@ -193,7 +194,10 @@ function exportExcel() {
 
   XLSX.writeFile(workbook, "rekap_nilai_mahasiswa.xlsx");
 }
-
+window.initPage = initPage;
+window.back = back;
+window.exportCSV = exportCSV;
+window.exportExcel = exportExcel;
 </script>
 
 </body>

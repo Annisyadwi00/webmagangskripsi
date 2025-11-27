@@ -60,10 +60,14 @@
     </main>
   </div>
 
-<script>
-/* INIT PAGE */
+<script type="module">
+import { apiRequest } from "./src/apiService.js";
+import { logout as doLogout, requireAuth } from "./src/auth.js";
+
+const auth = requireAuth(["mahasiswa"]);
 function initForm() {
-  const name = localStorage.getItem("name") || "Mahasiswa";
+  if (!auth) return;
+  const name = auth.name || "Mahasiswa";
 
   document.getElementById("userName").innerText = name;
   document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
@@ -71,8 +75,7 @@ function initForm() {
 
 /* LOGOUT */
 function logout() {
-  localStorage.clear();
-  location.href = "login.html";
+  doLogout();
 }
 
 /* SUBMIT FORM */
@@ -92,36 +95,33 @@ async function ajukanMagang() {
   }
 
   const payload = {
-    mahasiswaId: localStorage.getItem("userId"),
-    nama_mahasiswa: localStorage.getItem("name"),
-    email: localStorage.getItem("email"),
+    mahasiswaId: auth?.userid,
+    nama_mahasiswa: auth?.name,
+    email: auth?.email,
     posisi,
     perusahaan,
     link_dokumen
   };
 
   try {
-    const res = await fetch("http://localhost:3000/api/v1/pengajuan", {
+    await apiRequest("/pengajuan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.msg || data.error || "Pengajuan gagal.");
-      return;
-    }
 
     alert("Pengajuan berhasil dikirim!");
     location.href = "status-pengajuan.html";
 
   } catch (err) {
     console.error(err);
-    alert("Terjadi kesalahan saat mengirim pengajuan.");
+    alert(err.message || "Terjadi kesalahan saat mengirim pengajuan.");
   }
 }
+window.initForm = initForm;
+window.logout = logout; 
+window.ajukanMagang = ajukanMagang;
+
 </script>
 
 </body>

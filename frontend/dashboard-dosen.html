@@ -50,11 +50,15 @@
     </main>
   </div>
 
-<script>
+<script type="module">
+import { apiRequest } from "./src/apiService.js";
+import { logout as doLogout, requireAuth } from "./src/auth.js";
+
+const auth = requireAuth(["dosen"]);
 /* INIT PAGE */
 function initPage() {
-  const name = localStorage.getItem("name") || "Dosen";
-
+  if (!auth) return;
+  const name = auth.name || "Dosen";
   document.getElementById("userName").innerText = name;
   document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
 
@@ -63,8 +67,7 @@ function initPage() {
 
 /* LOGOUT */
 function logout() {
-  localStorage.clear();
-  location.href = "login.html";
+  doLogout();
 }
 
 /* LOAD ALL PENGAJUAN */
@@ -78,8 +81,7 @@ async function loadPengajuan() {
   emptyState.style.display = "none";
 
   try {
-    const res = await fetch("http://localhost:3000/api/v1/pengajuan");
-    const data = await res.json();
+    const data = await apiRequest("/pengajuan");
 
     if (!Array.isArray(data)) {
       throw new Error("Format data tidak valid");
@@ -127,7 +129,7 @@ async function loadPengajuan() {
           </button>
 
           <button class="btn btn-ghost"
-                  style="color:var(--danger);" 
+                  style="color:var(--danger);"
                   onclick="reject('${item.id}')">
             Tolak
           </button>
@@ -153,7 +155,7 @@ function statusColor(status) {
 async function approve(id) {
   if (!confirm("Yakin ingin menyetujui pengajuan ini?")) return;
 
-  await fetch(`http://localhost:3000/api/v1/pengajuan/${id}/approve`, {
+  await fetch(`pengajuan/${id}/approve`, {
     method: "PATCH"
   });
 
@@ -164,13 +166,16 @@ async function approve(id) {
 async function reject(id) {
   if (!confirm("Yakin ingin menolak pengajuan ini?")) return;
 
-  await fetch(`http://localhost:3000/api/v1/pengajuan/${id}/reject`, {
+  await apiRequest(`pengajuan/${id}/reject`, {
     method: "PATCH"
   });
 
   loadPengajuan();
 }
-
+window.initPage = initPage;
+window.logout = logout;
+window.approve = approve;
+window.reject = reject;
 </script>
 
 </body>

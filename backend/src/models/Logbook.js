@@ -28,6 +28,15 @@ const Logbook = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    dosenPembimbingId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    feedback: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,  // createdAt & updatedAt

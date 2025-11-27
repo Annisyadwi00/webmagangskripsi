@@ -64,11 +64,14 @@
 
   </div>
 
-<script>
-/* INIT PAGE */
-function initPage() {
-  const name = localStorage.getItem("name") || "Mahasiswa";
+<script type="module">
+import { apiRequest } from "./src/apiService.js";
+import { logout as doLogout, requireAuth } from "./src/auth.js";
 
+const auth = requireAuth(["mahasiswa"]);
+function initPage() {
+  if (!auth) return;
+  const name = auth.name || "Mahasiswa";
   document.getElementById("userName").innerText = name;
   document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
 
@@ -77,8 +80,7 @@ function initPage() {
 
 /* LOGOUT */
 function logout() {
-  localStorage.clear();
-  location.href = "login.html";
+  doLogout();
 }
 
 /* LOAD LOGBOOK LIST */
@@ -89,11 +91,8 @@ async function loadLogbook() {
   container.innerHTML =
     "<p style='font-size:13px;color:var(--text-muted);'>Memuat logbook...</p>";
 
-  const mahasiswaId = localStorage.getItem("userId");
-
   try {
-    const res = await fetch(`http://localhost:3000/api/v1/logbook?mahasiswaId=${mahasiswaId}`);
-    const data = await res.json();
+    const data = await apiRequest(`/logbook?mahasiswaId=${auth?.userid}`);
 
     if (!Array.isArray(data) || data.length === 0) {
       container.innerHTML = "";
@@ -142,8 +141,6 @@ async function loadLogbook() {
 async function tambahLogbook() {
   const judul = document.getElementById("judul").value.trim();
   const link = document.getElementById("linkLogbook").value.trim();
-  const mahasiswaId = localStorage.getItem("userId");
-  const nama_mahasiswa = localStorage.getItem("name");
 
   if (!judul || !link) {
     alert("Semua field wajib diisi.");
@@ -157,23 +154,18 @@ async function tambahLogbook() {
 
   const payload = {
     id: "log_" + Date.now(),
-    mahasiswaId,
-    nama_mahasiswa,
+    mahasiswaId: auth?.userid,
+    nama_mahasiswa: auth?.name,
     judul,
     link,
   };
 
   try {
-    const res = await fetch("http://localhost:3000/api/v1/logbook", {
+    await apiRequest("/logbook", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-
-    if (!res.ok) {
-      alert("Gagal menyimpan logbook.");
-      return;
-    }
 
     alert("Logbook berhasil ditambahkan!");
     loadLogbook();
@@ -182,8 +174,7 @@ async function tambahLogbook() {
 
   } catch (err) {
     console.error(err);
-    alert("Terjadi kesalahan.");
-  }
+    alert(err.message||"Terjadi Kesalahan");
 }
 
 /* HAPUS LOGBOOK */
@@ -191,7 +182,7 @@ async function hapus(id) {
   if (!confirm("Yakin ingin menghapus logbook?")) return;
 
   try {
-    await fetch(`http://localhost:3000/api/v1/logbook/${id}`, {
+    await apiRequest(`/logbook/${id}`, {
       method: "DELETE",
     });
 
@@ -199,9 +190,14 @@ async function hapus(id) {
 
   } catch (err) {
     console.error(err);
-    alert("Gagal menghapus logbook.");
+    alert(err.message || "Gagal menghapus logbook.");
   }
 }
+
+window.initPage = initPage;
+window.logout = logout;
+window.tambahLogbook = tambahLogbook;
+window.hapus = hapus;
 
 </script>
 

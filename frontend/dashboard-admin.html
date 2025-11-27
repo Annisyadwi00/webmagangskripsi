@@ -153,12 +153,17 @@
     </div>
   </div>
 
-<script>
-let editingId = null;
+<script type="module">
+import { apiRequest } from "./src/apiService.js";
+import { logout as doLogout, requireAuth } from "./src/auth.js";
 
+let editingId = null;
+const auth = requireAuth(["admin"]);
 /* INIT PAGE */
 function initPage() {
-  const name = localStorage.getItem("name") || "Admin";
+  if (!auth) return;
+
+  const name = auth.name || "Admin";
   document.getElementById("userName").innerText = name;
   document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
 
@@ -167,8 +172,7 @@ function initPage() {
 
 /* LOGOUT */
 function logout() {
-  localStorage.clear();
-  location.href = "login.html";
+  doLogout();
 }
 
 /* LOAD JOB LIST */
@@ -181,8 +185,7 @@ async function loadJobs() {
   emptyState.style.display = "none";
 
   try {
-    const res = await fetch("http://localhost:3000/api/v1/jobs");
-    const jobs = await res.json();
+    const jobs = await apiRequest("/jobs");
 
     if (!Array.isArray(jobs) || jobs.length === 0) {
       container.innerHTML = "";
@@ -235,8 +238,7 @@ async function editJob(id) {
   editingId = id;
   document.getElementById("modalTitle").innerText = "Edit Lowongan";
 
-  const res = await fetch(`http://localhost:3000/api/v1/jobs/${id}`);
-  const job = await res.json();
+  const job = await apiRequest(`/jobs/${id}`);
 
   document.getElementById("title").value = job.title;
   document.getElementById("company").value = job.company;
@@ -263,40 +265,38 @@ async function saveJob() {
   }
 
   const url = editingId
-    ? `http://localhost:3000/api/v1/jobs/${editingId}`
-    : "http://localhost:3000/api/v1/jobs";
+    ? `/jobs/${editingId}`
+    : "/jobs";
 
   const method = editingId ? "PUT" : "POST";
 
-  const res = await fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  try {
+    await apiRequest(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  if (!res.ok) {
-    alert("Gagal menyimpan data.");
-    return;
+    closeModal();
+    loadJobs();
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Gagal menyimpan data.");
   }
-
-  closeModal();
-  loadJobs();
 }
 
 /* HAPUS JOB */
 async function deleteJob(id) {
   if (!confirm("Yakin ingin menghapus lowongan ini?")) return;
 
-  const res = await fetch(`http://localhost:3000/api/v1/jobs/${id}`, {
-    method: "DELETE"
-  });
-
-  if (!res.ok) {
-    alert("Gagal menghapus data.");
-    return;
-  }
-
-  loadJobs();
+  try {
+    await apiRequest(`/jobs/${id}`, {
+      method: "DELETE"
+    });
+    loadJobs();
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Gagal menghapus lowongan."); 
 }
 
 /* CLOSE MODAL */
@@ -312,6 +312,13 @@ function resetForm() {
   document.getElementById("description").value = "";
   document.getElementById("link").value = "";
 }
+window.initPage = initPage;
+window.logout = logout;
+window.openModalTambah = openModalTambah;
+window.editJob = editJob;
+window.saveJob = saveJob;
+window.deleteJob = deleteJob;
+window.closeModal = closeModal;
 
 </script>
 

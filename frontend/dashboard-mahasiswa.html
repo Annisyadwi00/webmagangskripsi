@@ -74,9 +74,17 @@
     </main>
   </div>
 
-<script>
+<script type="module">
+import { apiRequest } from "./src/apiService.js";
+import { logout as doLogout, requireAuth } from "./src/auth.js";
+
+const auth = requireAuth(["mahasiswa"]);
+
 function initPage() {
   const name = localStorage.getItem("name") || "Mahasiswa";
+  if (!auth) return;
+
+  const name = auth.name || "Mahasiswa";
   document.getElementById("userName").innerText = name;
   document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
 
@@ -85,8 +93,7 @@ function initPage() {
 }
 
 function logout() {
-  localStorage.clear();
-  location.href = "login.html";
+  doLogout();
 }
 
 function goPengajuan() {
@@ -98,16 +105,15 @@ function goPengajuan() {
 ============================ */
 async function checkNotifikasi() {
   const notifBox = document.getElementById("notifBox");
-  const email = localStorage.getItem("email");
+  const email = auth?.email;
 
   try {
-    const res = await fetch("http://localhost:3000/api/v1/pengajuan");
-    const data = await res.json();
+    const data = await
 
     // cari pengajuan milik mahasiswa
     const my = data.find(p => p.email === email);
 
-    if (!my) return; // belum pernah ajukan → no notif
+    if (!my) return;
 
     // NOTIF berdasarkan status:
     if (my.status === "pending") {
@@ -127,8 +133,8 @@ async function checkNotifikasi() {
     }
 
     // CEK apakah nilai sudah keluar
-    const nilaiRes = await fetch(`http://localhost:3000/api/v1/nilai/${my.id}`);
-    if (nilaiRes.ok) {
+  const nilaiRes = await apiRequest(`/nilai/${my.id}`).catch(() => null);
+    if (nilaiRes) {
       notifBox.classList.add("notif-success");
       notifBox.innerHTML = "Nilai akhir magang kamu sudah tersedia! 🎉";
       notifBox.style.display = "block";
@@ -151,8 +157,7 @@ async function loadJobs() {
   emptyState.style.display = "none";
 
   try {
-    const res = await fetch("http://localhost:3000/api/v1/jobs");
-    const jobs = await res.json();
+    const jobs = await apiRequest("/jobs");
 
     if (!Array.isArray(jobs) || jobs.length === 0) {
       container.innerHTML = "";
@@ -195,6 +200,11 @@ function daftar(link) {
   if (!link) return alert("Link belum tersedia.");
   window.open(link, "_blank");
 }
+window.initPage = initPage;
+window.logout = logout;
+window.goPengajuan = goPengajuan;
+window.daftar = daftar
+
 </script>
 
 </body>

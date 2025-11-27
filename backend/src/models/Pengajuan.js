@@ -40,10 +40,20 @@ const Pengajuan = sequelize.define(
     },
 
     status: {
-      type: DataTypes.ENUM("pending", "disetujui", "ditolak"),
+      type: DataTypes.ENUM("pending", "disetujui", "ditolak", "dinilai", "selesai"),
       defaultValue: "pending",
     },
   },
+  
+    dosenPembimbingId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    statusMahasiswa: {
+      type: DataTypes.ENUM("menunggu", "dibimbing", "selesai"),
+      defaultValue: "menunggu",
+    },
   {
     timestamps: true, // createdAt + updatedAt
     tableName: "pengajuan",
