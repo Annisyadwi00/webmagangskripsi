@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
-const Pengajuan = require("../models/pengajuan");
+const Pengajuan = require("../models/Pengajuan");
 const auth = require("../middlewares/auth");
 
 const allowedStatusMahasiswa = ["menunggu", "dibimbing", "selesai"];

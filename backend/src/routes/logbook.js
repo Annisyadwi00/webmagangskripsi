@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Logbook = require("../models/logbook");
+const Logbook = require("../models/Logbook");
 const auth = require("../middlewares/auth");
 // ===============================
 // 1// 1. GET LOGBOOK (filter by mahasiswaId atau dosenPembimbingId)

@@ -1,7 +1,7 @@
 const express = require("express");
 const { fn, col, Op } = require("sequelize");
 const Pengajuan = require("../models/pengajuan");
-const Logbook = require("../models/logbook");
+const Logbook = require("../models/Logbook");
 const Nilai = require("../models/Nilai");
 
 const router = express.Router();
