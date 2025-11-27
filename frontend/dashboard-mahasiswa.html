@@ -81,7 +81,6 @@ import { logout as doLogout, requireAuth } from "./src/auth.js";
 const auth = requireAuth(["mahasiswa"]);
 
 function initPage() {
-  const name = localStorage.getItem("name") || "Mahasiswa";
   if (!auth) return;
 
   const name = auth.name || "Mahasiswa";
@@ -108,8 +107,8 @@ async function checkNotifikasi() {
   const email = auth?.email;
 
   try {
-    const data = await
-
+    const data = await apiRequest("/pengajuan");
+    if(!Array.isArray(data)) return;
     // cari pengajuan milik mahasiswa
     const my = data.find(p => p.email === email);
 
@@ -133,7 +132,7 @@ async function checkNotifikasi() {
     }
 
     // CEK apakah nilai sudah keluar
-  const nilaiRes = await apiRequest(`/nilai/${my.id}`).catch(() => null);
+   const nilaiRes = await apiRequest(`/nilai/${my.id}`).catch(() => null);
     if (nilaiRes) {
       notifBox.classList.add("notif-success");
       notifBox.innerHTML = "Nilai akhir magang kamu sudah tersedia! 🎉";
@@ -203,7 +202,7 @@ function daftar(link) {
 window.initPage = initPage;
 window.logout = logout;
 window.goPengajuan = goPengajuan;
-window.daftar = daftar
+window.daftar = daftar;
 
 </script>
 

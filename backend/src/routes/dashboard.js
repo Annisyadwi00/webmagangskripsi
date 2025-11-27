@@ -1,7 +1,7 @@
 const express = require("express");
-const { fn, col } = require("sequelize");
-const Pengajuan = require("../models/Pengajuan");
-const Logbook = require("../models/Logbook");
+const { fn, col, Op } = require("sequelize");
+const Pengajuan = require("../models/pengajuan");
+const Logbook = require("../models/logbook");
 const Nilai = require("../models/Nilai");
 
 const router = express.Router();
@@ -32,6 +32,8 @@ router.get("/", async (req, res) => {
       pending: 0,
       disetujui: 0,
       ditolak: 0,
+      dinilai: 0,
+      selesai: 0,
     };
 
     pengajuanCounts.forEach((item) => {
@@ -62,7 +64,12 @@ router.get("/", async (req, res) => {
       : null;
 
     const approvedPengajuan = await Pengajuan.count({
-      where: { ...pengajuanWhere, status: "disetujui" },
+      where: {
+        ...pengajuanWhere,
+        status:{
+            [Op.in]: ["disetujui", "dinilai", "selesai"],
+        },
+        },
     });
     const laporanCompletion = approvedPengajuan
       ? Math.round((totalNilai / approvedPengajuan) * 100)

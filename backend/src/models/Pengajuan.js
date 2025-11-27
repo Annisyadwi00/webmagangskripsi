@@ -43,8 +43,7 @@ const Pengajuan = sequelize.define(
       type: DataTypes.ENUM("pending", "disetujui", "ditolak", "dinilai", "selesai"),
       defaultValue: "pending",
     },
-  },
-  
+
     dosenPembimbingId: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -54,6 +53,7 @@ const Pengajuan = sequelize.define(
       type: DataTypes.ENUM("menunggu", "dibimbing", "selesai"),
       defaultValue: "menunggu",
     },
+  },
   {
     timestamps: true, // createdAt + updatedAt
     tableName: "pengajuan",

@@ -26,6 +26,7 @@ const dashboardRoutes = require("./routes/dashboard");
 app.use("/api/v1/pengajuan", auth(), pengajuanRoutes);
 app.use("/api/v1/logbook", auth(), logbookRoutes);
 app.use("/api/v1/nilai", auth(), nilaiRoutes);
+app.use("/api/v1/jobs", auth(), jobRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/laporan", auth(), laporanRoutes);

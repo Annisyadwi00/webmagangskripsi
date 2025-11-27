@@ -193,15 +193,20 @@ async function loadJobs() {
       return;
     }
 
-    container.innerHTML = jobs.map(job => `
+    container.innerHTML = jobs.map(job => {
+      const shortDesc = job.description ? `${job.description.substring(0, 80)}...` : "";
+
+      return `
       <article class="job-card">
 
         <div class="job-company">${job.company}</div>
         <div class="job-title">${job.title}</div>
 
-        <p style="font-size:13px;margin-top:6px;">
-          ${job.description ? job.description.substring(0, 80) : ""}...
-        </p>
+        ${shortDesc ? `
+          <p style="font-size:13px;margin-top:6px;">
+            ${shortDesc}
+          </p>
+        ` : ""}
 
         <div class="job-meta">
           <span>${job.location}</span>
@@ -217,7 +222,8 @@ async function loadJobs() {
         </div>
 
       </article>
-    `).join("");
+     `;
+    }).join("");
 
   } catch (err) {
     console.error(err);
@@ -281,7 +287,7 @@ async function saveJob() {
     loadJobs();
   } catch (err) {
     console.error(err);
-    alert(err.message || "Gagal menyimpan data.");
+    alert(err.message || "Gagal menyimpan lowongan.");
   }
 }
 
@@ -297,6 +303,7 @@ async function deleteJob(id) {
   } catch (err) {
     console.error(err);
     alert(err.message || "Gagal menghapus lowongan."); 
+}
 }
 
 /* CLOSE MODAL */
