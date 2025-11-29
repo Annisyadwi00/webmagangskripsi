@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fasilkom Career Hub</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body class="landing-body">
+  <header class="landing-nav">
+    <div class="nav-left">
+      <div class="logo-circle">F</div>
+      <div class="logo-text">
+        <div class="logo-title">Fasilkom Career Hub</div>
+        <small>Portal magang & skripsi</small>
+      </div>
+    </div>
+    <nav class="nav-links" aria-label="Navigasi utama">
+      <a href="#home" class="nav-link">Home</a>
+      <a href="#about" class="nav-link">About Us</a>
+      <a href="#lowongan" class="nav-link">Lowongan</a>
+      <a href="#profil" class="nav-link">Profil</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="login.html">Masuk</a>
+      <a class="btn btn-primary" href="register.html">Daftar</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Buka menu cepat" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="quick-menu" id="quickMenu" aria-label="Menu cepat">
+        <a href="#lowongan">Lowongan</a>
+        <a href="dashboard-mahasiswa.html">Daftar Lowongan</a>
+        <a href="dashboard-dosen.html">Daftar Dosen Pembimbing</a>
+        <a href="#informasi">Informasi Magang</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero-section">
+      <div class="hero-grid">
+        <div class="hero-text">
+          <div class="pill">Fakultas Ilmu Komputer UNSIKA</div>
+          <h1>Mulai kariermu dengan pengalaman magang terbaik.</h1>
+          <p>
+            Jelajahi peluang magang, temukan dosen pembimbing, dan siapkan dokumen skripsi dengan panduan yang jelas.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="dashboard-mahasiswa.html">Cari Lowongan</a>
+            <a class="btn btn-ghost" href="#informasi">Lihat panduan magang</a>
+          </div>
+          <div class="hero-meta">
+            <span>Terhubung dengan industri lokal</span>
+            <span>Kalender pengajuan yang rapi</span>
+            <span>Profil dosen pembimbing</span>
+          </div>
+        </div>
+
+        <div class="hero-slider" aria-label="Galeri peluang magang">
+          <div class="hero-slide active">
+            <img src="assets/img/slide1.svg" alt="Kolaborasi mahasiswa, dosen, dan industri" />
+            <div class="slide-caption">
+              <p class="slide-kicker">Kolaborasi</p>
+              <h3>Hubungkan mahasiswa, dosen, dan mitra industri.</h3>
+              <span>Foto atau poster perusahaan dapat ditampilkan di sini.</span>
+            </div>
+          </div>
+          <div class="hero-slide">
+            <img src="assets/img/slide2.svg" alt="Mahasiswa mempresentasikan proyek" />
+            <div class="slide-caption">
+              <p class="slide-kicker">Presentasi</p>
+              <h3>Tunjukkan portofolio terbaikmu di ruang presentasi.</h3>
+              <span>Bagikan hasil riset, magang, atau capstone.</span>
+            </div>
+          </div>
+          <div class="hero-slide">
+            <img src="assets/img/slide3.svg" alt="Inovasi digital dan pertumbuhan karier" />
+            <div class="slide-caption">
+              <p class="slide-kicker">Inovasi</p>
+              <h3>Siapkan skill digital sebelum terjun ke industri.</h3>
+              <span>Tambahkan foto kegiatan magang terbaru di sini.</span>
+            </div>
+          </div>
+          <button class="slide-btn prev" id="prevSlide" aria-label="Sebelumnya">&#10094;</button>
+          <button class="slide-btn next" id="nextSlide" aria-label="Berikutnya">&#10095;</button>
+          <div class="slide-dots" id="slideDots" aria-label="Pilih slide"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section-cards">
+      <div class="section-header">
+        <p class="pill">About Us</p>
+        <h2>Jembatan antara kampus dan dunia kerja.</h2>
+        <p class="section-sub">Platform terpadu untuk mengelola magang, bimbingan skripsi, dan kolaborasi industri.</p>
+      </div>
+      <div class="cards-grid landing">
+        <article class="info-card">
+          <div class="icon-circle">🎯</div>
+          <h3>Terarah</h3>
+          <p>Roadmap magang dan skripsi yang terstruktur, dari pendaftaran hingga evaluasi.</p>
+        </article>
+        <article class="info-card">
+          <div class="icon-circle">🤝</div>
+          <h3>Kolaboratif</h3>
+          <p>Kolaborasi mahasiswa, dosen, dan mitra industri lewat dashboard yang mudah dipakai.</p>
+        </article>
+        <article class="info-card">
+          <div class="icon-circle">📈</div>
+          <h3>Terukur</h3>
+          <p>Tracking progres logbook dan laporan akhir dalam satu tempat.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="lowongan" class="section-cards">
+      <div class="section-header">
+        <p class="pill">Lowongan</p>
+        <h2>Peluang terbaru untuk mahasiswa Fasilkom.</h2>
+        <p class="section-sub">Pilih posisi yang sesuai minatmu dan ajukan langsung dari dashboard mahasiswa.</p>
+      </div>
+      <div class="cards-grid landing jobs">
+        <article class="job-highlight">
+          <div class="job-top">
+            <div>
+              <p class="job-company">Mitra Digital Nusantara</p>
+              <h3>Frontend Developer Intern</h3>
+            </div>
+            <span class="badge-pill">Hybrid</span>
+          </div>
+          <p>Mengembangkan komponen UI, menulis dokumentasi, dan kolaborasi dengan tim produk.</p>
+          <div class="job-meta">
+            <span>Durasi 3-6 bulan</span>
+            <span>Stipend & sertifikat</span>
+          </div>
+        </article>
+        <article class="job-highlight">
+          <div class="job-top">
+            <div>
+              <p class="job-company">Lab Riset Fasilkom</p>
+              <h3>Data Analyst Intern</h3>
+            </div>
+            <span class="badge-pill">On-site</span>
+          </div>
+          <p>Eksplorasi dataset kampus, membuat dashboard, dan memberi insight untuk pimpinan fakultas.</p>
+          <div class="job-meta">
+            <span>Durasi 2-4 bulan</span>
+            <span>Pembimbing internal</span>
+          </div>
+        </article>
+        <article class="job-highlight">
+          <div class="job-top">
+            <div>
+              <p class="job-company">Startup Edutech Lokal</p>
+              <h3>UI/UX Research Intern</h3>
+            </div>
+            <span class="badge-pill">Remote</span>
+          </div>
+          <p>Riset kebutuhan pengguna, membuat wireframe, dan menguji prototipe aplikasi belajar.</p>
+          <div class="job-meta">
+            <span>Durasi 3 bulan</span>
+            <span>Mentor profesional</span>
+          </div>
+        </article>
+      </div>
+      <div class="section-cta">
+        <a class="btn btn-primary" href="dashboard-mahasiswa.html">Lihat semua lowongan</a>
+        <a class="btn btn-ghost" href="pengajuan.html">Ajukan magang</a>
+      </div>
+    </section>
+
+    <section id="profil" class="section-cards">
+      <div class="section-header">
+        <p class="pill">Profil</p>
+        <h2>Kenali dosen pembimbing dan profilmu.</h2>
+        <p class="section-sub">Pastikan data diri lengkap sebelum mendaftar dan temukan pembimbing sesuai fokus riset.</p>
+      </div>
+      <div class="profile-grid">
+        <article class="profile-card">
+          <div class="profile-header">
+            <div class="avatar-circle">AR</div>
+            <div>
+              <h3>Dr. Arif Rahman, M.Kom</h3>
+              <p>Machine Learning, Data Mining</p>
+            </div>
+          </div>
+          <ul>
+            <li>Kuota bimbingan: 4 mahasiswa</li>
+            <li>Jadwal konsul: Rabu & Jumat</li>
+            <li>Fokus topik: Computer Vision, NLP</li>
+          </ul>
+          <a class="btn btn-ghost" href="dashboard-dosen.html">Lihat profil dosen</a>
+        </article>
+        <article class="profile-card">
+          <div class="profile-header">
+            <div class="avatar-circle">KM</div>
+            <div>
+              <h3>Profil Mahasiswa</h3>
+              <p>Lengkapi data sebelum apply.</p>
+            </div>
+          </div>
+          <ul>
+            <li>Resume & transkrip terbaru</li>
+            <li>Portofolio atau project unggulan</li>
+            <li>Riwayat organisasi & sertifikasi</li>
+          </ul>
+          <a class="btn btn-primary" href="profile.html">Lengkapi profil</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="informasi" class="section-cards info-banner">
+      <div class="info-content">
+        <div>
+          <p class="pill">Informasi Magang</p>
+          <h2>Siapkan berkas penting sebelum mendaftar.</h2>
+          <ul>
+            <li>Surat pengantar fakultas & KRS aktif.</li>
+            <li>CV, portofolio, dan transkrip sementara.</li>
+            <li>Proposal atau ringkasan topik skripsi (jika relevan).</li>
+            <li>Timeline magang yang disepakati dengan dosen pembimbing.</li>
+          </ul>
+        </div>
+        <div class="info-actions">
+          <a class="btn btn-primary" href="upload-laporan.html">Unggah dokumen</a>
+          <a class="btn btn-ghost" href="logbook-mahasiswa.html">Lihat logbook</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const quickMenu = document.getElementById('quickMenu');
+
+    function closeMenu(event) {
+      if (!quickMenu.contains(event.target) && !menuToggle.contains(event.target)) {
+        quickMenu.classList.remove('open');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        document.removeEventListener('click', closeMenu);
+      }
+    }
+
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = quickMenu.classList.toggle('open');
+      menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      document.removeEventListener('click', closeMenu);
+      if (isOpen) {
+        setTimeout(() => document.addEventListener('click', closeMenu), 0);
+      }
+    });
+
+    const slides = Array.from(document.querySelectorAll('.hero-slide'));
+    const dotsContainer = document.getElementById('slideDots');
+    let currentSlide = 0;
+    let slideTimer;
+
+    function buildDots() {
+      dotsContainer.innerHTML = '';
+      slides.forEach((_, index) => {
+        const dot = document.createElement('button');
+        dot.className = 'slide-dot' + (index === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', `Pilih slide ${index + 1}`);
+        dot.addEventListener('click', () => {
+          showSlide(index);
+          resetTimer();
+        });
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    function showSlide(index) {
+      if (!slides.length) return;
+      currentSlide = (index + slides.length) % slides.length;
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('active', idx === currentSlide);
+      });
+      const dots = dotsContainer.querySelectorAll('.slide-dot');
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentSlide);
+      });
+    }
+
+    function resetTimer() {
+      clearInterval(slideTimer);
+      slideTimer = setInterval(() => showSlide(currentSlide + 1), 6500);
+    }
+
+    document.getElementById('nextSlide').addEventListener('click', () => {
+      showSlide(currentSlide + 1);
+      resetTimer();
+    });
+    document.getElementById('prevSlide').addEventListener('click', () => {
+      showSlide(currentSlide - 1);
+      resetTimer();
+    });
+
+    buildDots();
+    resetTimer();
+  </script>
+</body>
+</html>

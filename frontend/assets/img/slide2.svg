@@ -1,0 +1,20 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title>Ruang Presentasi</title>
+  <desc>Ilustrasi abstrak mahasiswa mempresentasikan ide di depan layar besar.</desc>
+  <defs>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f4c81" />
+      <stop offset="100%" stop-color="#9bd2ff" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#grad2)" rx="24" />
+  <g transform="translate(120 90)" fill="#f9fbff" opacity="0.9">
+    <rect x="180" y="80" width="560" height="320" rx="26" fill="#ffffff" opacity="0.85" />
+    <rect x="220" y="120" width="480" height="160" rx="20" fill="#1f6feb" opacity="0.22" />
+    <rect x="220" y="310" width="260" height="50" rx="14" fill="#1f6feb" opacity="0.35" />
+    <circle cx="360" cy="250" r="70" fill="#1f6feb" opacity="0.6" />
+    <circle cx="560" cy="200" r="46" fill="#1f6feb" opacity="0.5" />
+    <text x="460" y="420" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="42" font-weight="700" fill="#0f2d4a">Presentasi Proyek</text>
+    <text x="460" y="460" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="22" fill="#0f2d4a">Tunjukkan portofolio dan hasil magang</text>
+  </g>
+</svg>
