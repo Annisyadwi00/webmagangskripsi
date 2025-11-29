@@ -43,7 +43,7 @@
             <span class="brand-sub">Portal Magang</span>
           </div>
         </div>
-        <nav class="topnav">
+        <nav class="topnav topnav-centered">
           <a href="#homeSection">Home</a>
           <a href="#infoSection">About Us</a>
           <a href="#lowonganList">Lowongan</a>
@@ -263,7 +263,7 @@ async function loadJobs() {
       if (stripMeta) stripMeta.innerText = "0 posisi";
       return;
     }
-    
+
     const uniqueLocations = [...new Set(jobs.map(job => job.location))];
     const lokasi = uniqueLocations.slice(0, 3).join(", ");
     if (stripText) {

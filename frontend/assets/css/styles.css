@@ -302,6 +302,7 @@ select:focus {
 }
 .link-muted { color: var(--text-muted); text-decoration: none; }
 .link-muted:hover { color: var(--primary-dark); }
+
 .avatar-circle {
   width: 32px;
   height: 32px;
