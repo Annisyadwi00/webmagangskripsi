@@ -23,6 +23,7 @@ const sequelize = require("./config/db");
 // SERVER CONFIG
 // ===============================
 const PORT = process.env.PORT || 3000;
+const SHOULD_SYNC = process.env.DB_SYNC !== "false";
 
 // ===============================
 // CONNECT DATABASE & RUN SERVER
@@ -32,8 +33,11 @@ const PORT = process.env.PORT || 3000;
     await sequelize.authenticate();
     console.log("✔ Database terkoneksi dengan baik.");
 
-    // OPSIONAL — JANGAN DIPAKAI DI PRODUKSI
-    // await sequelize.sync({ alter: true });
+     if (SHOULD_SYNC) {
+      // Pastikan struktur tabel selaras dengan model terbaru agar error kolom hilang
+      await sequelize.sync({ alter: true });
+      console.log("✔ Skema database telah disinkronkan (alter mode).");
+    }
 
     app.listen(PORT, () => {
       console.log(`✔ Server berjalan di http://localhost:${PORT}`);

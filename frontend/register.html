@@ -116,7 +116,7 @@ async function register() {
       alert(data.msg || data.error || "Pendaftaran gagal.");
       return;
     }
-    await showVerificationNotice(email, data.debugCode);
+    await showVerificationFlow(email, data.debugCode);
   } catch (err) {
     console.error(err);
     alert("Terjadi kesalahan server saat register.");

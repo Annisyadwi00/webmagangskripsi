@@ -17,6 +17,12 @@ const User = sequelize.define(
       allowNull: false,
       unique: true,
     },
+    deviceId: {
+      // kolom opsional untuk menyimpan identifikasi perangkat jika dibutuhkan
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "deviceid",
+    },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
