@@ -8,32 +8,33 @@
 </head>
 <body class="landing-body">
   <header class="landing-nav">
-    <div class="nav-left">
-      <div class="logo-circle">F</div>
-      <div class="logo-text">
-        <div class="logo-title">Fasilkom Career Hub</div>
-        <small>Portal magang & skripsi</small>
-      </div>
-    </div>
-    <nav class="nav-links" aria-label="Navigasi utama">
-      <a href="#home" class="nav-link">Home</a>
-      <a href="#about" class="nav-link">About Us</a>
-      <a href="#lowongan" class="nav-link">Lowongan</a>
-      <a href="#profil" class="nav-link">Profil</a>
-    </nav>
-    <div class="nav-actions">
-      <a class="btn btn-ghost" href="login.html">Masuk</a>
-      <a class="btn btn-primary" href="register.html">Daftar</a>
-      <button class="menu-toggle" id="menuToggle" aria-label="Buka menu cepat" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <div class="quick-menu" id="quickMenu" aria-label="Menu cepat">
-        <a href="#lowongan">Lowongan</a>
-        <a href="dashboard-mahasiswa.html">Daftar Lowongan</a>
-        <a href="dashboard-dosen.html">Daftar Dosen Pembimbing</a>
-        <a href="#informasi">Informasi Magang</a>
+     <div class="nav-container">
+      <div class="nav-left">
+        <div class="logo-circle">F</div>
+        <div class="logo-text">
+          <div class="logo-title">Fasilkom Career Hub</div>
+          <small>Portal magang & skripsi</small>
+        </div>
+     <nav class="nav-links" aria-label="Navigasi utama">
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#about" class="nav-link">About Us</a>
+        <a href="#lowongan" class="nav-link">Lowongan</a>
+        <a href="#profil" class="nav-link">Profil</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="login.html">Masuk</a>
+        <a class="btn btn-primary" href="register.html">Daftar</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Buka menu cepat" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="quick-menu" id="quickMenu" aria-label="Menu cepat">
+          <a href="#lowongan">Lowongan</a>
+          <a href="dashboard-mahasiswa.html">Daftar Lowongan</a>
+          <a href="dashboard-dosen.html">Daftar Dosen Pembimbing</a>
+          <a href="#informasi">Informasi Magang</a>
+        </div>
       </div>
     </div>
   </header>
@@ -55,6 +56,23 @@
             <span>Terhubung dengan industri lokal</span>
             <span>Kalender pengajuan yang rapi</span>
             <span>Profil dosen pembimbing</span>
+          </div>
+          <div class="hero-card-strip">
+            <div class="metric-card">
+              <p class="metric-label">Peluang aktif</p>
+              <div class="metric-value">42</div>
+              <span class="metric-sub">Lowongan yang siap dilamar</span>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">Dosen pembimbing</p>
+              <div class="metric-value">18</div>
+              <span class="metric-sub">Siap menerima mentee baru</span>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">Mahasiswa aktif</p>
+              <div class="metric-value">120+</div>
+              <span class="metric-sub">Sudah mengisi logbook</span>
+            </div>
           </div>
         </div>
 
@@ -91,37 +109,40 @@
     </section>
 
     <section id="about" class="section-cards">
-      <div class="section-header">
-        <p class="pill">About Us</p>
-        <h2>Jembatan antara kampus dan dunia kerja.</h2>
-        <p class="section-sub">Platform terpadu untuk mengelola magang, bimbingan skripsi, dan kolaborasi industri.</p>
-      </div>
-      <div class="cards-grid landing">
-        <article class="info-card">
-          <div class="icon-circle">🎯</div>
-          <h3>Terarah</h3>
-          <p>Roadmap magang dan skripsi yang terstruktur, dari pendaftaran hingga evaluasi.</p>
-        </article>
-        <article class="info-card">
-          <div class="icon-circle">🤝</div>
-          <h3>Kolaboratif</h3>
-          <p>Kolaborasi mahasiswa, dosen, dan mitra industri lewat dashboard yang mudah dipakai.</p>
-        </article>
-        <article class="info-card">
-          <div class="icon-circle">📈</div>
-          <h3>Terukur</h3>
-          <p>Tracking progres logbook dan laporan akhir dalam satu tempat.</p>
-        </article>
+      <div class="section-inner">
+        <div class="section-header">
+          <p class="pill">About Us</p>
+          <h2>Jembatan antara kampus dan dunia kerja.</h2>
+          <p class="section-sub">Platform terpadu untuk mengelola magang, bimbingan skripsi, dan kolaborasi industri.</p>
+        </div>
+        <div class="cards-grid landing">
+          <article class="info-card">
+            <div class="icon-circle">🎯</div>
+            <h3>Terarah</h3>
+            <p>Roadmap magang dan skripsi yang terstruktur, dari pendaftaran hingga evaluasi.</p>
+          </article>
+          <article class="info-card">
+            <div class="icon-circle">🤝</div>
+            <h3>Kolaboratif</h3>
+            <p>Kolaborasi mahasiswa, dosen, dan mitra industri lewat dashboard yang mudah dipakai.</p>
+          </article>
+          <article class="info-card">
+            <div class="icon-circle">📈</div>
+            <h3>Terukur</h3>
+            <p>Tracking progres logbook dan laporan akhir dalam satu tempat.</p>
+          </article>
+        </div>
       </div>
     </section>
 
     <section id="lowongan" class="section-cards">
-      <div class="section-header">
-        <p class="pill">Lowongan</p>
-        <h2>Peluang terbaru untuk mahasiswa Fasilkom.</h2>
-        <p class="section-sub">Pilih posisi yang sesuai minatmu dan ajukan langsung dari dashboard mahasiswa.</p>
-      </div>
-      <div class="cards-grid landing jobs">
+      <div class="section-inner">
+        <div class="section-header">
+          <p class="pill">Lowongan</p>
+          <h2>Peluang terbaru untuk mahasiswa Fasilkom.</h2>
+          <p class="section-sub">Pilih posisi yang sesuai minatmu dan ajukan langsung dari dashboard mahasiswa.</p>
+        </div>
+        <div class="cards-grid landing jobs">
         <article class="job-highlight">
           <div class="job-top">
             <div>
@@ -164,20 +185,22 @@
             <span>Mentor profesional</span>
           </div>
         </article>
-      </div>
-      <div class="section-cta">
-        <a class="btn btn-primary" href="dashboard-mahasiswa.html">Lihat semua lowongan</a>
-        <a class="btn btn-ghost" href="pengajuan.html">Ajukan magang</a>
+     </div>
+        <div class="section-cta">
+          <a class="btn btn-primary" href="dashboard-mahasiswa.html">Lihat semua lowongan</a>
+          <a class="btn btn-ghost" href="pengajuan.html">Ajukan magang</a>
+        </div>
       </div>
     </section>
 
     <section id="profil" class="section-cards">
-      <div class="section-header">
-        <p class="pill">Profil</p>
-        <h2>Kenali dosen pembimbing dan profilmu.</h2>
-        <p class="section-sub">Pastikan data diri lengkap sebelum mendaftar dan temukan pembimbing sesuai fokus riset.</p>
-      </div>
-      <div class="profile-grid">
+       <div class="section-inner">
+        <div class="section-header">
+          <p class="pill">Profil</p>
+          <h2>Kenali dosen pembimbing dan profilmu.</h2>
+          <p class="section-sub">Pastikan data diri lengkap sebelum mendaftar dan temukan pembimbing sesuai fokus riset.</p>
+        </div>
+        <div class="profile-grid">
         <article class="profile-card">
           <div class="profile-header">
             <div class="avatar-circle">AR</div>
@@ -208,6 +231,7 @@
           </ul>
           <a class="btn btn-primary" href="profile.html">Lengkapi profil</a>
         </article>
+        </div>
       </div>
     </section>
 
