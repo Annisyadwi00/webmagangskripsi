@@ -257,20 +257,40 @@ select:focus {
   backdrop-filter: blur(12px);
 }
 
-.brand {
-  display: flex;
-  flex-direction: column;
+.brand { display: flex; flex-direction: column; gap: 6px; }
+
+.brand-with-nav { flex-direction: row; gap: 20px; align-items: center; flex-wrap: wrap; }
+
+.brand-mark { display: inline-flex; align-items: center; gap: 10px; }
+
+.brand-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0f4c81, #1f6feb);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 10px 20px rgba(15, 76, 129, 0.25);
 }
 
-.brand-title {
-  font-weight: 650;
-  letter-spacing: 0.02em;
-}
+.brand-title { font-weight: 700; letter-spacing: 0.02em; display: block; }
 
-.brand-sub {
-  font-size: 11px;
-  color: var(--text-muted);
+.brand-sub { font-size: 11px; color: var(--text-muted); display: block; }
+
+.topnav { display: flex; gap: 14px; font-size: 13px; }
+
+.topnav a {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--text-main);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
+.topnav a:hover { background: var(--primary-soft); color: var(--primary-dark); }
 
 .user-menu {
   display: flex;
@@ -278,7 +298,8 @@ select:focus {
   gap: 10px;
   font-size: 13px;
 }
-
+.link-muted { color: var(--text-muted); text-decoration: none; }
+.link-muted:hover { color: var(--primary-dark); }
 .avatar-circle {
   width: 32px;
   height: 32px;
@@ -318,6 +339,7 @@ select:focus {
   color: var(--text-muted);
   font-size: 13px;
 }
+
 .hero-card {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -357,6 +379,7 @@ select:focus {
   font-size: 12px;
 }
 
+
 .chip-group {
   display: flex;
   flex-wrap: wrap;
@@ -369,6 +392,69 @@ select:focus {
   border-radius: 999px;
   background: var(--primary-soft);
   color: var(--primary-dark);
+}
+
+/* Quick strip cards */
+
+.strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.strip-card {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.strip-card.highlight {
+  border-color: #cbdcff;
+  box-shadow: 0 16px 38px rgba(31, 111, 235, 0.16);
+}
+
+.strip-head { display: flex; align-items: center; gap: 10px; }
+
+.strip-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.strip-label {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.strip-card h3 { margin: 2px 0 4px; }
+
+.strip-desc { margin: 0; color: var(--text-muted); font-size: 13px; }
+
+.strip-actions { display: flex; align-items: center; gap: 10px; }
+
+.pill-soft {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 12px;
+  border: 1px solid #dbe5ff;
 }
 
 /* Job cards */

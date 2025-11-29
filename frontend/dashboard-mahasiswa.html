@@ -36,11 +36,23 @@
     <!-- TOPBAR -->
     <header class="topbar">
       <div class="brand">
-        <span class="brand-title">Portal Magang UNSIKA</span>
-        <span class="brand-sub">Dashboard Mahasiswa</span>
+        <div class="brand brand-with-nav">
+        <div class="brand-mark">
+          <div class="brand-logo">F</div>
+          <div>
+            <span class="brand-title">FASILKOM UNSIKA</span>
+            <span class="brand-sub">Portal Magang</span>
+          </div>
+        </div>
+        <nav class="topnav">
+          <a href="#homeSection">Home</a>
+          <a href="#infoSection">About Us</a>
+          <a href="#lowonganList">Lowongan</a>
+        </nav>
       </div>
 
       <div class="user-menu">
+        <a class="link-muted" href="profile.html">Profil</a>
         <span id="userName">Mahasiswa</span>
         <div class="avatar-circle" id="userInitial">M</div>
         <button class="btn btn-ghost" onclick="logout()">Keluar</button>
@@ -82,7 +94,53 @@
       <!-- NOTIFIKASI -->
       <div id="notifBox" class="notif-box"></div>
 
-      <div class="page-heading">
+       <!-- STRIP INFO UTAMA -->
+      <section class="strip-grid" id="infoSection">
+        <article class="strip-card highlight">
+          <div class="strip-head">
+            <div class="strip-icon">🗺️</div>
+            <div>
+              <p class="strip-label">Lowongan aktif</p>
+              <h3>Daftar Lowongan</h3>
+            </div>
+          </div>
+          <p id="stripLowonganText" class="strip-desc">Memuat lokasi lowongan terbaru...</p>
+          <div class="strip-actions">
+            <span id="stripLowonganMeta" class="pill-soft">-</span>
+            <a href="#lowonganList" class="btn btn-ghost">Lihat lowongan</a>
+          </div>
+        </article>
+        <article class="strip-card">
+          <div class="strip-head">
+            <div class="strip-icon">👩‍🏫</div>
+            <div>
+              <p class="strip-label">Bimbingan</p>
+              <h3>Daftar Dosen</h3>
+            </div>
+          </div>
+          <p class="strip-desc">Kenali dosen pembimbing yang bisa diajak konsultasi dan pantau ketersediaannya.</p>
+          <div class="strip-actions">
+            <span class="pill-soft">Hubungi prodi</span>
+            <a href="status-pengajuan.html" class="btn btn-ghost">Cek penugasan</a>
+          </div>
+        </article>
+        <article class="strip-card">
+          <div class="strip-head">
+            <div class="strip-icon">ℹ️</div>
+            <div>
+              <p class="strip-label">Informasi</p>
+              <h3>Konversi & aturan</h3>
+            </div>
+          </div>
+          <p class="strip-desc">Informasi singkat apakah magangmu terkonversi ke SKS, syarat laporan, dan tenggat penting.</p>
+          <div class="strip-actions">
+            <span class="pill-soft">Panduan prodi</span>
+            <a href="upload-laporan.html" class="btn btn-ghost">Unggah berkas</a>
+          </div>
+        </article>
+      </section>
+
+      <div class="page-heading" id="lowonganList">
         <div>
           <h1>Lowongan Magang</h1>
           <p>Daftar langsung ke website resmi perusahaan.</p>
@@ -191,7 +249,8 @@ async function checkNotifikasi() {
 async function loadJobs() {
   const container = document.getElementById("jobsContainer");
   const emptyState = document.getElementById("emptyState");
-
+  const stripText = document.getElementById("stripLowonganText");
+  const stripMeta = document.getElementById("stripLowonganMeta");
   container.innerHTML = "<p style='font-size:13px;color:var(--text-muted);'>Memuat lowongan...</p>";
   emptyState.style.display = "none";
 
@@ -201,9 +260,19 @@ async function loadJobs() {
     if (!Array.isArray(jobs) || jobs.length === 0) {
       container.innerHTML = "";
       emptyState.style.display = "block";
+      if (stripText) stripText.innerText = "Belum ada lowongan aktif hari ini.";
+      if (stripMeta) stripMeta.innerText = "0 posisi";
       return;
     }
-
+    const uniqueLocations = [...new Set(jobs.map(job => job.location))];
+    const lokasi = uniqueLocations.slice(0, 3).join(", ");
+    if (stripText) {
+      stripText.innerText = lokasi
+        ? `Lowongan tersedia di ${lokasi}.`
+        : "Lowongan terbaru siap dilamar.";
+    }
+    if (stripMeta) stripMeta.innerText = `${jobs.length} posisi aktif`;
+    
     container.innerHTML = jobs.map(job => `
       <article class="job-card">
         <div class="job-company">${job.company}</div>
