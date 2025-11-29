@@ -49,6 +49,35 @@
 
     <!-- CONTENT -->
     <main class="dashboard-content">
+       <!-- HERO / HOME SECTION -->
+      <section class="hero-card" id="homeSection" style="display:none;">
+        <div class="hero-left">
+          <p class="pill">Selamat datang</p>
+          <h1 id="heroTitle" style="margin:6px 0 10px;">Dashboard Mahasiswa</h1>
+          <p id="heroSubtitle" style="max-width:520px;color:var(--text-muted);">
+            Kelola pengajuan, pantau progres logbook, dan cek status bimbingan dalam satu tempat.
+          </p>
+          <div class="hero-actions" style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="goPengajuan()">Ajukan magang sekarang</button>
+            <a class="btn btn-ghost" href="logbook-mahasiswa.html">Isi logbook</a>
+            <a class="btn btn-ghost" href="profile.html">Perbarui profil</a>
+          </div>
+        </div>
+        <div class="hero-right">
+          <div class="stat-chip">
+            <span class="chip-label">Status pengajuan</span>
+            <strong id="chipPengajuan">-</strong>
+          </div>
+          <div class="stat-chip">
+            <span class="chip-label">Progress logbook</span>
+            <strong id="chipLogbook">0 entri</strong>
+          </div>
+          <div class="stat-chip">
+            <span class="chip-label">Jadwal bimbingan</span>
+            <strong id="chipBimbingan">Belum dijadwalkan</strong>
+          </div>
+        </div>
+      </section>
 
       <!-- NOTIFIKASI -->
       <div id="notifBox" class="notif-box"></div>
@@ -86,8 +115,17 @@ function initPage() {
   const name = auth.name || "Mahasiswa";
   document.getElementById("userName").innerText = name;
   document.getElementById("userInitial").innerText = name.charAt(0).toUpperCase();
+  
+  document.getElementById("heroTitle").innerText = `Hai, ${name}!`;
+  document.getElementById("homeSection").style.display = "grid";
 
-  checkNotifikasi();
+  // fallback stat default
+  document.getElementById("chipLogbook").innerText =
+    `${localStorage.getItem("logbookCount") || 0} entri`;
+  document.getElementById("chipBimbingan").innerText =
+    localStorage.getItem("jadwalBimbingan") || "Belum dijadwalkan";
+  
+    checkNotifikasi();
   loadJobs();
 }
 
@@ -113,6 +151,8 @@ async function checkNotifikasi() {
     const my = data.find(p => p.email === email);
 
     if (!my) return;
+
+    document.getElementById("chipPengajuan").innerText = my.status || "-";
 
     // NOTIF berdasarkan status:
     if (my.status === "pending") {
