@@ -249,8 +249,9 @@ select:focus {
 
 .topbar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 12px;
   padding: 12px 24px;
   background: rgba(255, 255, 255, 0.94);
   border-bottom: 1px solid var(--border-soft);
@@ -297,6 +298,7 @@ select:focus {
   align-items: center;
   gap: 10px;
   font-size: 13px;
+  align-self: flex-start;
 }
 .link-muted { color: var(--text-muted); text-decoration: none; }
 .link-muted:hover { color: var(--primary-dark); }

@@ -35,8 +35,7 @@
 
     <!-- TOPBAR -->
     <header class="topbar">
-      <div class="brand">
-        <div class="brand brand-with-nav">
+      <div class="brand brand-with-nav">
         <div class="brand-mark">
           <div class="brand-logo">F</div>
           <div>
@@ -264,6 +263,7 @@ async function loadJobs() {
       if (stripMeta) stripMeta.innerText = "0 posisi";
       return;
     }
+    
     const uniqueLocations = [...new Set(jobs.map(job => job.location))];
     const lokasi = uniqueLocations.slice(0, 3).join(", ");
     if (stripText) {
@@ -272,7 +272,7 @@ async function loadJobs() {
         : "Lowongan terbaru siap dilamar.";
     }
     if (stripMeta) stripMeta.innerText = `${jobs.length} posisi aktif`;
-    
+
     container.innerHTML = jobs.map(job => `
       <article class="job-card">
         <div class="job-company">${job.company}</div>
