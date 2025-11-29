@@ -7,6 +7,7 @@ const User = require("../models/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "devsecret";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1d";
+const VERIFICATION_EXPIRES_IN_MINUTES = 15;
 
 // Helper: buat token
 function signToken(user) {
@@ -20,6 +21,9 @@ function signToken(user) {
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
+}
+function generateVerificationCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // =======================================
@@ -71,21 +75,37 @@ router.post("/register", async (req, res) => {
 
     // Hash password
     const hashed = await bcrypt.hash(password, 10);
-
+    const verificationCode = generateVerificationCode();
+    const verificationExpires = new Date(
+      Date.now() + VERIFICATION_EXPIRES_IN_MINUTES * 60 * 1000
+    );
     const user = await User.create({
       id: "user_" + uuidv4(),
       name,
       email,
       password: hashed,
       role,
+      isVerified: false,
+      verificationCode: await bcrypt.hash(verificationCode, 10),
+      verificationExpires,
     });
 
-    res.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
+    const responsePayload = {
+      msg: "Registrasi berhasil. Kami telah mengirimkan kode verifikasi ke email Anda.",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      verificationExpiresAt: verificationExpires,
+    };
+
+    if (process.env.NODE_ENV !== "production") {
+      responsePayload.debugCode = verificationCode;
+    }
+
+    res.status(201).json(responsePayload);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -112,6 +132,11 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ msg: "Email atau password salah." });
+    }
+  if (user.isVerified === false) {
+      return res.status(403).json({
+        msg: "Email belum diverifikasi. Silakan cek email Anda untuk kode verifikasi.",
+      });
     }
 
     const token = signToken(user);
@@ -157,6 +182,100 @@ router.get("/me", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(401).json({ msg: "Token tidak valid." });
+  }
+});
+// =======================================
+// VERIFY EMAIL
+// POST /api/v1/auth/verify-code
+// =======================================
+router.post("/verify-code", async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ msg: "Email dan kode verifikasi wajib diisi." });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ msg: "User tidak ditemukan." });
+    }
+
+    if (user.isVerified) {
+      return res.json({ msg: "Email sudah terverifikasi." });
+    }
+
+    if (!user.verificationCode || !user.verificationExpires) {
+      return res
+        .status(400)
+        .json({ msg: "Tidak ada kode verifikasi. Silakan minta kode baru." });
+    }
+
+    const now = new Date();
+    if (now > user.verificationExpires) {
+      return res
+        .status(400)
+        .json({ msg: "Kode verifikasi sudah kedaluwarsa. Silakan minta kode baru." });
+    }
+
+    const isValidCode = await bcrypt.compare(code, user.verificationCode);
+    if (!isValidCode) {
+      return res.status(400).json({ msg: "Kode verifikasi salah." });
+    }
+
+    user.isVerified = true;
+    user.verificationCode = null;
+    user.verificationExpires = null;
+    await user.save();
+
+    res.json({ msg: "Email berhasil diverifikasi." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =======================================
+// RESEND VERIFICATION CODE
+// POST /api/v1/auth/resend-code
+// =======================================
+router.post("/resend-code", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ msg: "Email wajib diisi." });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ msg: "User tidak ditemukan." });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ msg: "Email sudah diverifikasi." });
+    }
+
+    const newCode = generateVerificationCode();
+    const expiresAt = new Date(Date.now() + VERIFICATION_EXPIRES_IN_MINUTES * 60 * 1000);
+
+    user.verificationCode = await bcrypt.hash(newCode, 10);
+    user.verificationExpires = expiresAt;
+    await user.save();
+
+    const responsePayload = {
+      msg: "Kode verifikasi baru telah dikirim ke email Anda.",
+      verificationExpiresAt: expiresAt,
+    };
+
+    if (process.env.NODE_ENV !== "production") {
+      responsePayload.debugCode = newCode;
+    }
+
+    res.json(responsePayload);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 

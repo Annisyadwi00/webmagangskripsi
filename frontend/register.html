@@ -110,12 +110,73 @@ async function register() {
       alert(data.msg || data.error || "Pendaftaran gagal.");
       return;
     }
-
-    alert("Pendaftaran berhasil! Silakan login.");
-    location.href = "login.html";
+    await showVerificationNotice(email, data.debugCode);
   } catch (err) {
     console.error(err);
     alert("Terjadi kesalahan server saat register.");
+  }
+}
+async function showVerificationFlow(email, debugCode) {
+  let infoMsg = "Pendaftaran berhasil! Kode verifikasi telah dikirim ke email Anda.";
+  if (debugCode) {
+    infoMsg += `\nKode verifikasi (pengujian): ${debugCode}`;
+  }
+  alert(infoMsg);
+
+  let code = prompt("Masukkan kode verifikasi yang dikirim ke email:");
+
+  if (!code) {
+    const resend = confirm("Belum menerima kode? Kirim ulang ke email Anda?");
+    if (!resend) return;
+
+    const resendResult = await requestResend(email);
+    if (!resendResult) return;
+
+    code = prompt("Masukkan kode verifikasi terbaru:");
+  }
+
+  if (!code) return;
+
+  const verifyRes = await fetch("http://localhost:3000/api/v1/auth/verify-code", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, code: code.trim() }),
+  });
+
+  const verifyData = await verifyRes.json();
+
+  if (!verifyRes.ok) {
+    alert(verifyData.msg || verifyData.error || "Verifikasi gagal.");
+    return;
+  }
+
+  alert("Email berhasil diverifikasi. Silakan login.");
+  location.href = "login.html";
+}
+
+async function requestResend(email) {
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/auth/resend-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.msg || data.error || "Gagal mengirim ulang kode verifikasi.");
+      return null;
+    }
+
+    let msg = "Kode verifikasi baru telah dikirim ke email.";
+    if (data.debugCode) msg += `\nKode verifikasi (pengujian): ${data.debugCode}`;
+    alert(msg);
+    return data;
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan saat mengirim ulang kode.");
+    return null;
   }
 }
 </script>

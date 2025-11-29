@@ -26,6 +26,19 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: "mahasiswa",
     },
+     isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    verificationCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    verificationExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     tableName: "users",

@@ -73,7 +73,18 @@ async function login() {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.msg || data.error || "Login gagal.");
+       if (res.status === 403) {
+        const resend = confirm(
+          (data.msg || "Email belum diverifikasi.") +
+          "\n\nKirim ulang kode verifikasi ke email Anda?"
+        );
+
+        if (resend) {
+          await resendVerification(email);
+        }
+      } else {
+        alert(data.msg || data.error || "Login gagal.");
+      }
       return;
     }
 
@@ -97,6 +108,29 @@ async function login() {
   } catch (err) {
     console.error(err);
     alert("Terjadi kesalahan server saat login.");
+  }
+}
+async function resendVerification(email) {
+  try {
+    const res = await fetch("http://localhost:3000/api/v1/auth/resend-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.msg || data.error || "Gagal mengirim ulang kode verifikasi.");
+      return;
+    }
+
+    let msg = data.msg || "Kode verifikasi telah dikirim.";
+    if (data.debugCode) msg += `\nKode verifikasi (pengujian): ${data.debugCode}`;
+    alert(msg);
+  } catch (err) {
+    console.error(err);
+    alert("Terjadi kesalahan saat mengirim ulang kode verifikasi.");
   }
 }
 </script>
