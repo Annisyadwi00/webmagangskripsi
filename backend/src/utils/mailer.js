@@ -9,17 +9,12 @@ const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
 const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
 const SMTP_CLIENT_ID = process.env.SMTP_CLIENT_ID || "localhost";
+const NODE_ENV = process.env.NODE_ENV || "development";
+const ALLOW_CONSOLE_FALLBACK =
+  process.env.SMTP_CONSOLE_FALLBACK !== "false" && NODE_ENV !== "production";
 
-function assertMailerConfig() {
-  if (!SMTP_HOST) {
-    throw new Error("SMTP_HOST belum dikonfigurasi untuk mengirim email verifikasi.");
-  }
-
-  if (!SMTP_FROM) {
-    throw new Error(
-      "SMTP_FROM atau SMTP_USER belum dikonfigurasi. Tambahkan pengirim email di environment."
-    );
-  }
+function isMailerConfigured() {
+  return Boolean(SMTP_HOST && SMTP_FROM);
 }
 
 function waitForResponse(socket, expectedCodes) {
@@ -76,7 +71,9 @@ async function sendCommand(socket, command, expectedCodes) {
 }
 
 async function sendMail({ to, subject, text }) {
-  assertMailerConfig();
+  if (!isMailerConfigured()) {
+    throw new Error("Konfigurasi SMTP belum lengkap.");
+  }
 
   const socket = SMTP_SECURE
     ? tls.connect({ host: SMTP_HOST, port: SMTP_PORT })
@@ -118,6 +115,16 @@ async function sendMail({ to, subject, text }) {
   }
 }
 
+function logFallbackMail({ to, subject, text }, reason) {
+  const header = reason
+    ? `[MAILER DEV FALLBACK] ${reason}`
+    : "[MAILER DEV FALLBACK] SMTP dilewati";
+  console.warn(header);
+  console.info(`To: ${to}`);
+  console.info(`Subject: ${subject}`);
+  console.info("Body:\n" + text);
+}
+
 function buildVerificationMessage(name, code, expiresAt) {
   const expires = expiresAt
     ? new Intl.DateTimeFormat("id-ID", {
@@ -145,7 +152,24 @@ function buildVerificationMessage(name, code, expiresAt) {
 async function sendVerificationEmail({ to, name, code, expiresAt }) {
   const subject = "Kode Verifikasi Portal Magang UNSIKA";
   const text = buildVerificationMessage(name, code, expiresAt);
-  await sendMail({ to, subject, text });
+  if (!isMailerConfigured()) {
+    if (!ALLOW_CONSOLE_FALLBACK) {
+      throw new Error(
+        "SMTP belum dikonfigurasi dan fallback console dimatikan. Aktifkan SMTP atau setel SMTP_CONSOLE_FALLBACK=true untuk pengembangan."
+      );
+    }
+    logFallbackMail({ to, subject, text }, "Konfigurasi SMTP belum lengkap.");
+    return;
+  }
+
+  try {
+    await sendMail({ to, subject, text });
+  } catch (err) {
+    if (!ALLOW_CONSOLE_FALLBACK) {
+      throw err;
+    }
+    logFallbackMail({ to, subject, text }, err.message);
+  }
 }
 
 module.exports = {
