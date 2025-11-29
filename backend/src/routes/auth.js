@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const User = require("../models/User");
+const { sendVerificationEmail } = require("../utils/mailer");
 
 const JWT_SECRET = process.env.JWT_SECRET || "devsecret";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1d";
@@ -90,6 +91,20 @@ router.post("/register", async (req, res) => {
       verificationExpires,
     });
 
+    try {
+      await sendVerificationEmail({
+        to: email,
+        name,
+        code: verificationCode,
+        expiresAt: verificationExpires,
+      });
+    } catch (emailErr) {
+      console.error("Gagal mengirim email verifikasi:", emailErr.message);
+      return res.status(500).json({
+        msg: "Registrasi gagal mengirim email verifikasi. Silakan coba lagi atau hubungi admin.",
+      });
+    }
+
     const responsePayload = {
       msg: "Registrasi berhasil. Kami telah mengirimkan kode verifikasi ke email Anda.",
       user: {
@@ -133,7 +148,7 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ msg: "Email atau password salah." });
     }
-  if (user.isVerified === false) {
+    if (user.isVerified === false) {
       return res.status(403).json({
         msg: "Email belum diverifikasi. Silakan cek email Anda untuk kode verifikasi.",
       });
@@ -263,6 +278,20 @@ router.post("/resend-code", async (req, res) => {
     user.verificationExpires = expiresAt;
     await user.save();
 
+    try {
+      await sendVerificationEmail({
+        to: email,
+        name: user.name,
+        code: newCode,
+        expiresAt,
+      });
+    } catch (emailErr) {
+      console.error("Gagal mengirim ulang email verifikasi:", emailErr.message);
+      return res.status(500).json({
+        msg: "Gagal mengirim ulang kode verifikasi. Silakan coba lagi atau hubungi admin.",
+      });
+    }
+    
     const responsePayload = {
       msg: "Kode verifikasi baru telah dikirim ke email Anda.",
       verificationExpiresAt: expiresAt,
