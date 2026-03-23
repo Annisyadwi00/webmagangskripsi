@@ -1,14 +1,17 @@
 /* ============ GLOBAL ============ */
 :root {
-  --bg-main: #f5f7fb;
+  --bg-main: #f8fafc;
   --bg-card: #ffffff;
-  --primary: #1f6feb;      /* biru soft */
+  --primary: #2563eb;      /* biru soft */
   --primary-soft: #e5f0ff;
   --primary-dark: #0f4c81;
   --text-main: #1f2933;
   --text-muted: #6b7280;
+  --text-dark: #1e293b;
   --border-soft: #e5e7eb;
-  --danger: #e11d48;
+  --secondary: #64748b;
+  --success: #10b981;
+  --danger: #ef4444;
   --radius-lg: 12px;
   --radius-xl: 18px;
   --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.08);
@@ -22,10 +25,10 @@
 }
 
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: radial-gradient(circle at top, #edf2ff 0, #f5f7fb 48%, #eef2f7 100%);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-light);
   color: var(--text-main);
+  line-height: 1.6;
 }
 
 /* ============ AUTH LAYOUT (LOGIN / REGISTER) ============ */
@@ -173,23 +176,18 @@ label {
   color: var(--text-main);
 }
 
-input,
-select {
-  border-radius: 999px;
-  border: 1px solid var(--border-soft);
-  padding: 10px 14px;
-  font-size: 14px;
-  outline: none;
-  background: #f9fafb;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
-    background var(--transition-fast);
+input, textarea, select {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 0.6rem 1rem;
+  transition: border-color 0.2s;
 }
 
 input:focus,
 select:focus {
+  outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.18);
-  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* Buttons */
@@ -210,15 +208,18 @@ select:focus {
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 10px 22px rgba(31, 111, 235, 0.35);
+  background-color: var(--primary);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease; /* Biar smooth pas di-hover */
+  border: none;
 }
 
 .btn-primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(15, 76, 129, 0.45);
+ background-color: var(--primary-hover);
+  transform: translateY(-1px); /* Efek melayang dikit */
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 .btn-ghost {
@@ -1055,14 +1056,12 @@ select:focus {
   gap: 16px;
 }
 
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
-  padding: 18px 20px;
-  display: grid;
-  gap: 8px;
+.card, .container-box {
+  background: #ffffff;
+  border-radius: var(--radius);
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Bayangan halus */
 }
 
 .card h2 {
