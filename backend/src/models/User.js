@@ -1,57 +1,47 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
+const { DataTypes } = require('sequelize');
+const db = require('../config/db');
 
-const User = sequelize.define(
-  "User",
-  {
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    deviceId: {
-      // kolom opsional untuk menyimpan identifikasi perangkat jika dibutuhkan
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: "deviceid",
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    role: {
-      type: DataTypes.ENUM("admin", "dosen", "mahasiswa"),
-      allowNull: false,
-      defaultValue: "mahasiswa",
-    },
-     isVerified: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-    verificationCode: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    verificationExpires: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
+const User = db.define('User', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
   },
-  {
-    tableName: "users",
-    timestamps: true,
-    createdAt: "created_at",
-    updatedAt: "updated_at",
-  }
-);
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
+    validate: { isEmail: true }
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  role: {
+    type: DataTypes.ENUM('mahasiswa', 'dosen', 'admin'),
+    allowNull: false,
+  },
+  // Tambahkan field spesifik kampus
+  npm: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: true, // Null jika admin/dosen
+  },
+  prodi: {
+    type: DataTypes.ENUM('Informatika', 'Sistem Informasi'),
+    allowNull: true,
+  },
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  verificationCode: DataTypes.STRING,
+  verificationExpires: DataTypes.DATE,
+}, {
+  timestamps: true,
+});
 
 module.exports = User;

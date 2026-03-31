@@ -2,7 +2,16 @@ const express = require("express");
 const router = express.Router();
 const Job = require("../models/Job");
 const { v4: uuidv4 } = require("uuid");
+const {Op} = require("sequelize");
 
+const currentJobs = await Job.findAll({
+  where: {
+    status: "active",
+    deadline: {
+      [Op.gte]: new Date(), // Hanya tampilkan lowongan yang deadline-nya belum lewat
+    }
+  }
+});
 
 // ===============================
 // 1. GET ALL JOBS

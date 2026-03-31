@@ -16,6 +16,10 @@ const Job = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    category: {
+      type: DataTypes.ENUM('Web Developer', 'Mobile Developer', 'Data Science', 'UI/UX', 'Network', 'Other'),
+      defaultValue: 'Other',
+    },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -24,13 +28,28 @@ const Job = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    // Tambahkan Slot/Kuota
+    quota: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1,
+    },
+    // Tambahkan Deadline
+    deadline: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
     link: {
       type: DataTypes.STRING,
       allowNull: false,
+      comment: "Link pendaftaran eksternal atau portal perusahaan"
+    },
+    status: {
+      type: DataTypes.ENUM('active', 'closed'),
+      defaultValue: 'active',
     },
   },
   {
-    timestamps: true, // auto createdAt + updatedAt
+    timestamps: true,
     tableName: "jobs",
   }
 );

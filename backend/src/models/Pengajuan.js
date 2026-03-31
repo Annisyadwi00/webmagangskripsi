@@ -1,63 +1,33 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
+const { DataTypes } = require('sequelize');
+const db = require('../config/db');
 
-const Pengajuan = sequelize.define(
-  "Pengajuan",
-  {
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
-    },
-
-    mahasiswaId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    nama_mahasiswa: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    posisi: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    perusahaan: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    link_dokumen: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    status: {
-      type: DataTypes.ENUM("pending", "disetujui", "ditolak", "dinilai", "selesai"),
-      defaultValue: "pending",
-    },
-
-    dosenPembimbingId: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
-    statusMahasiswa: {
-      type: DataTypes.ENUM("menunggu", "dibimbing", "selesai"),
-      defaultValue: "menunggu",
-    },
+const Pengajuan = db.define('Pengajuan', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
   },
-  {
-    timestamps: true, // createdAt + updatedAt
-    tableName: "pengajuan",
+  userId: { // Foreign Key ke User (Mahasiswa)
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  jobId: { // Foreign Key ke Job
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.ENUM('pending', 'interview', 'accepted', 'rejected'),
+    defaultValue: 'pending',
+  },
+  cvUrl: {
+    type: DataTypes.STRING,
+    allowNull: true, // Nanti diisi setelah upload file
+  },
+  catatanAdmin: {
+    type: DataTypes.TEXT,
+    allowNull: true,
   }
-);
+}, {
+  timestamps: true,
+});
 
 module.exports = Pengajuan;

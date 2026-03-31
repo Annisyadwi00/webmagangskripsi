@@ -8,36 +8,42 @@ const Nilai = sequelize.define(
       type: DataTypes.STRING,
       primaryKey: true,
     },
-
     pengajuanId: {
       type: DataTypes.STRING,
       allowNull: false,
+      comment: "Relasi ke pendaftaran magang yang dinilai"
     },
-
-    nilai: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-
-    catatan: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
-    linkNilai: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
     mahasiswaId: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
-    nama_mahasiswa: {
+    pemberiNilaiId: {
       type: DataTypes.STRING,
       allowNull: false,
+      comment: "ID Dosen atau Admin yang menginput nilai"
     },
+    // Menggunakan FLOAT agar bisa menampung nilai desimal
+    nilai_perusahaan: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    nilai_dosen: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    nilai_akhir: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      comment: "Hasil kalkulasi bobot nilai"
+    },
+    link_sertifikat_atau_form: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    catatan: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    }
   },
   {
     timestamps: true,

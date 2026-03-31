@@ -4,7 +4,10 @@ const { v4: uuidv4 } = require("uuid");
 const Nilai = require("../models/Nilai");
 const Pengajuan = require("../models/Pengajuan");
 const auth = require("../middlewares/auth");
-
+const dataNilai = await Nilai.findAll({
+  
+  include: [{ model: User, as: 'mahasiswa', attributes: ['name', 'npm'] }]
+});
 
 // khusus dosen
 router.use(auth("dosen"));
