@@ -3,6 +3,31 @@ const { Pengajuan, Job, User } = require('../models');
 exports.submitPengajuan = async (req, res) => {
   try {
     const { jobId } = req.body;
+    const userId = req.user.id;
+
+    // 1. Analisis Kekurangan: Cek apakah file sudah diupload
+    if (!req.file) {
+      return res.status(400).json({ msg: "Mohon upload CV dalam format PDF." });
+    }
+
+    // 2. Ambil path file yang disimpan multer
+    const cvUrl = req.file.filename; 
+
+    // 3. Simpan ke database (Pastikan model Pengajuan punya kolom cvUrl)
+    const baru = await Pengajuan.create({
+      id: "reg_" + Date.now(),
+      userId,
+      jobId,
+      cvUrl: cvUrl, // Simpan nama filenya saja
+      status: 'pending'
+    });
+
+    res.status(201).json({ msg: "Pendaftaran berhasil dengan CV terupload!", data: baru });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+  try {
+    const { jobId } = req.body;
     const userId = req.user.id; // Diambil dari middleware auth
 
     // 1. Validasi Input

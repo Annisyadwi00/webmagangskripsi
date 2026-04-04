@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const pengajuanController = require('../controllers/pengajuanController');
-const auth = require('../middlewares/auth');
+const authorize = require('../middlewares/auth'); 
+const upload = require('../middlewares/upload'); // Import middleware upload
 
-// Route hanya bertugas memetakan URL ke fungsi di Controller
-router.post('/apply', auth, pengajuanController.submitPengajuan);
+// Tambahkan upload.single('cv') sebelum controller
+router.post('/apply', authorize('mahasiswa'), upload.single('cv'), pengajuanController.submitPengajuan);
 
 module.exports = router;

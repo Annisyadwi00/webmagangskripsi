@@ -31,6 +31,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/laporan", auth(), laporanRoutes);
 app.use("/api/v1/dashboard", auth(), dashboardRoutes);
+app.use('/uploads', express.static('public/uploads'));
 // ===============================
 // TEST ROUTE
 // ===============================
