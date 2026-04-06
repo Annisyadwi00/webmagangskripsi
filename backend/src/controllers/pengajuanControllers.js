@@ -1,85 +1,98 @@
 const { Pengajuan, Job, User } = require('../models');
 
+/**
+ * SUBMIT PENGAJUAN / LAPOR PENERIMAAN MAGANG
+ * Controller ini menangani pendaftaran magang sekaligus upload file bukti/CV.
+ */
 exports.submitPengajuan = async (req, res) => {
   try {
     const { jobId } = req.body;
     const userId = req.user.id;
 
-    // 1. Analisis Kekurangan: Cek apakah file sudah diupload
-    if (!req.file) {
-      return res.status(400).json({ msg: "Mohon upload CV dalam format PDF." });
-    }
-
-    // 2. Ambil path file yang disimpan multer
-    const cvUrl = req.file.filename; 
-
-    // 3. Simpan ke database (Pastikan model Pengajuan punya kolom cvUrl)
-    const baru = await Pengajuan.create({
-      id: "reg_" + Date.now(),
-      userId,
-      jobId,
-      cvUrl: cvUrl, // Simpan nama filenya saja
-      status: 'pending'
-    });
-
-    res.status(201).json({ msg: "Pendaftaran berhasil dengan CV terupload!", data: baru });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-  try {
-    const { jobId } = req.body;
-    const userId = req.user.id; // Diambil dari middleware auth
-
-    // 1. Validasi Input
+    // 1. Validasi: Apakah ID Lowongan dikirim?
     if (!jobId) {
-      return res.status(400).json({ msg: "ID Lowongan (jobId) wajib disertakan." });
+      return res.status(400).json({ 
+        success: false, 
+        msg: "ID Lowongan (jobId) wajib disertakan." 
+      });
     }
 
-    // 2. Cek apakah Job/Lowongan itu ada dan masih buka
-    const job = await Job.findByPk(jobId);
-    if (!job) {
-      return res.status(404).json({ msg: "Lowongan tidak ditemukan." });
+    // 2. Validasi: Apakah file CV/Bukti diupload? (Multer)
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        msg: "Mohon upload berkas bukti pendaftaran/CV dalam format PDF." 
+      });
     }
 
-    // 3. KRITIS: Cek apakah mahasiswa sudah pernah melamar di posisi ini
+    // 3. Cari detail lowongan di database
+    const jobDetail = await Job.findByPk(jobId);
+    if (!jobDetail) {
+      return res.status(404).json({ 
+        success: false, 
+        msg: "Lowongan magang tidak ditemukan." 
+      });
+    }
+
+    // 4. Cek Deadline (Biar mahasiswa gak daftar ke lowongan basi)
+    const today = new Date();
+    const deadlineDate = new Date(jobDetail.deadline);
+    if (jobDetail.status === 'closed' || today > deadlineDate) {
+      return res.status(400).json({ 
+        success: false, 
+        msg: "Maaf, lowongan ini sudah ditutup atau sudah melewati masa deadline." 
+      });
+    }
+
+    // 5. Cek Duplikasi: Apakah mahasiswa sudah melamar di posisi ini sebelumnya?
     const alreadyApplied = await Pengajuan.findOne({ 
       where: { userId, jobId } 
     });
     
     if (alreadyApplied) {
       return res.status(400).json({ 
-        msg: "Kamu sudah mengirimkan pengajuan untuk posisi ini. Tunggu konfirmasi admin." 
+        success: false, 
+        msg: "Kamu sudah mengirimkan pengajuan untuk posisi ini. Silakan tunggu konfirmasi Admin." 
       });
     }
 
-    //4. Hitung berapa yang sudah diterima di job ini
-    const acceptedCount = await Pengajuan.count({ where: { jobId, status: 'accepted' } });
-    const jobDetail = await Job.findByPk(jobId);
+    // 6. Cek Kuota: Apakah kapasitas magang sudah terpenuhi?
+    const acceptedCount = await Pengajuan.count({ 
+      where: { jobId, status: 'accepted' } 
+    });
 
-        if (acceptedCount >= jobDetail.quota) {
-        return res.status(400).json({ msg: "Kuota magang sudah terpenuhi." });
-        }
+    if (acceptedCount >= jobDetail.quota) {
+      return res.status(400).json({ 
+        success: false, 
+        msg: "Maaf, kuota magang untuk posisi ini sudah terpenuhi (penuh)." 
+      });
+    }
 
-    // 5. Eksekusi Simpan Data
+    // 7. EKSEKUSI SIMPAN DATA
+    const cvUrl = req.file.filename; // Nama file yang dihasilkan Multer
     const pengajuanBaru = await Pengajuan.create({
-      id: "reg_" + Date.now(), // Atau pakai UUID
+      id: "reg_" + Date.now(), // Unique ID berdasarkan timestamp
       userId,
       jobId,
-      status: 'pending', // Default status
+      cvUrl: cvUrl,
+      status: 'pending', // Default status butuh verifikasi admin
       tanggalDaftar: new Date()
     });
 
-    res.status(201).json({
+    // 8. Berikan Response Berhasil
+    return res.status(201).json({
       success: true,
-      msg: "Pengajuan magang berhasil dikirim!",
+      msg: "Pengajuan magang berhasil dikirim dan file berhasil diupload!",
       data: pengajuanBaru
     });
 
   } catch (error) {
-    console.error("Error submitPengajuan:", error);
-    res.status(500).json({ 
+    // Log error di console server untuk debugging
+    console.error("Critical Error at submitPengajuan:", error);
+    
+    return res.status(500).json({ 
       success: false,
-      msg: "Terjadi kesalahan pada server saat memproses pengajuan.",
+      msg: "Terjadi kesalahan internal server saat memproses pengajuan.",
       error: error.message 
     });
   }

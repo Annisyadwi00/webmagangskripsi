@@ -1,104 +1,62 @@
-const express = require("express");
-const { fn, col, Op } = require("sequelize");
-const Pengajuan = require("../models/pengajuan");
-const Logbook = require("../models/Logbook");
-const Nilai = require("../models/Nilai");
+const { User, Job, Pengajuan, Logbook } = require('../models');
+const { Op } = require('sequelize');
 
-const router = express.Router();
-
-// Endpoint ringkasan dashboard dengan filter per peran
-router.get("/", async (req, res) => {
+exports.getAdminStats = async (req, res) => {
   try {
-    const role = req.query.role || "mahasiswa";
-    const mahasiswaId = req.query.mahasiswaId;
+    // 1. Hitung Total Mahasiswa (Role Mahasiswa)
+    const totalMahasiswa = await User.count({ where: { role: 'mahasiswa' } });
 
-    const filterByMahasiswa = role === "mahasiswa" && mahasiswaId;
-
-    const pengajuanWhere = filterByMahasiswa ? { mahasiswaId } : {};
-    const logbookWhere = filterByMahasiswa ? { mahasiswaId } : {};
-    const nilaiWhere = filterByMahasiswa ? { mahasiswaId } : {};
-
-    // Hitung jumlah pengajuan per status
-    const pengajuanCounts = await Pengajuan.findAll({
-      attributes: [
-        "status",
-        [fn("COUNT", col("status")), "count"],
-      ],
-      where: pengajuanWhere,
-      group: ["status"],
+    // 2. Hitung Lowongan yang Masih Aktif & Belum Deadline
+    const totalLowongan = await Job.count({ 
+      where: { 
+        status: 'active',
+        deadline: { [Op.gte]: new Date() }
+      } 
     });
 
-    const pengajuanSummary = {
-      pending: 0,
-      disetujui: 0,
-      ditolak: 0,
-      dinilai: 0,
-      selesai: 0,
-    };
+    // 3. Hitung Mahasiswa yang sudah melapor diterima
+    const totalDiterima = await Pengajuan.count({ where: { status: 'accepted' } });
 
-    pengajuanCounts.forEach((item) => {
-      const status = item.get("status");
-      const count = Number(item.get("count")) || 0;
-      if (pengajuanSummary[status] !== undefined) {
-        pengajuanSummary[status] = count;
+    // 4. Hitung Pengajuan yang butuh Verifikasi (Status Pending)
+    const butuhVerifikasi = await Pengajuan.count({ where: { status: 'pending' } });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        mahasiswa: totalMahasiswa,
+        lowongan: totalLowongan,
+        magangAktif: totalDiterima,
+        pendingVerifikasi: butuhVerifikasi
       }
     });
-
-    // Progress logbook
-    const totalLogbook = await Logbook.count({ where: logbookWhere });
-    const mahasiswaDenganLogbook = await Logbook.count({
-      where: logbookWhere,
-      distinct: true,
-      col: "mahasiswaId",
-    });
-    const rataRataLogbook = mahasiswaDenganLogbook
-      ? Number((totalLogbook / mahasiswaDenganLogbook).toFixed(2))
-      : 0;
-
-    // Nilai dan kelengkapan laporan (diasumsikan nilai terisi setelah laporan dikumpulkan)
-    const nilaiList = await Nilai.findAll({ where: nilaiWhere });
-    const totalNilai = nilaiList.length;
-    const totalNilaiScore = nilaiList.reduce((sum, n) => sum + n.nilai, 0);
-    const rataRataNilai = totalNilai
-      ? Number((totalNilaiScore / totalNilai).toFixed(2))
-      : null;
-
-    const approvedPengajuan = await Pengajuan.count({
-      where: {
-        ...pengajuanWhere,
-        status:{
-            [Op.in]: ["disetujui", "dinilai", "selesai"],
-        },
-        },
-    });
-    const laporanCompletion = approvedPengajuan
-      ? Math.round((totalNilai / approvedPengajuan) * 100)
-      : 0;
-
-    res.json({
-      role,
-      filter: filterByMahasiswa ? { mahasiswaId } : "semua",
-      pengajuan: pengajuanSummary,
-      logbook: {
-        total: totalLogbook,
-        mahasiswaAktif: mahasiswaDenganLogbook,
-        rataRataPerMahasiswa: rataRataLogbook,
-        progresMahasiswa: filterByMahasiswa ? totalLogbook : undefined,
-      },
-      laporan: {
-        selesai: totalNilai,
-        target: approvedPengajuan,
-        persentase: laporanCompletion,
-      },
-      nilai: {
-        rataRata: rataRataNilai,
-        total: totalNilai,
-      },
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-});
+};
 
-module.exports = router;
+exports.getMahasiswaStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Hitung berapa logbook yang sudah diisi oleh mahasiswa ini
+    const totalLogbook = await Logbook.count({ where: { mahasiswaId: userId } });
+
+    // Ambil status pengajuan terakhir
+    const statusTerakhir = await Pengajuan.findOne({ 
+      where: { userId },
+      order: [['createdAt', 'DESC']],
+      attributes: ['status', 'jobId'],
+      include: [{ model: Job, as: 'lowongan', attributes: ['company', 'title'] }]
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        jumlahLogbook: totalLogbook,
+        statusMagang: statusTerakhir || "Belum melapor"
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

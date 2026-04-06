@@ -1,101 +1,101 @@
-const express = require("express");
-const router = express.Router();
-const Logbook = require("../models/Logbook");
-const auth = require("../middlewares/auth");
-// ===============================
-// 1// 1. GET LOGBOOK (filter by mahasiswaId atau dosenPembimbingId)
-// ===============================
-router.get("/", auth(["admin", "dosen", "mahasiswa"]), async (req, res) => {
+const { Logbook, Pengajuan, Job } = require('../models');
+const { Op } = require('sequelize');
+
+/**
+ * CREATE LOGBOOK (Mahasiswa)
+ * Mengisi catatan harian magang.
+ */
+exports.createLogbook = async (req, res) => {
   try {
-    const { mahasiswaId, dosenPembimbingId } = req.query;
-    const where = {};
+    const { kegiatan, tanggal, progres } = req.body;
+    const userId = req.user.id;
 
-    if (mahasiswaId) where.mahasiswaId = mahasiswaId;
-    if (dosenPembimbingId) where.dosenPembimbingId = dosenPembimbingId;
-
-    const data = await Logbook.findAll({
-      where,
-      order: [["createdAt", "DESC"]],
+    // 1. Validasi: Cek apakah mahasiswa ini sudah DI-ACC magangnya oleh Admin
+    const pengajuanAktif = await Pengajuan.findOne({ 
+      where: { 
+        userId: userId, 
+        status: 'accepted' // Hanya yang sudah di-verify admin yang bisa isi logbook
+      } 
     });
 
-    res.json(data);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ===============================
-// 2. CREATE LOGBOOK
-// ===============================
-router.post("/", auth("mahasiswa"), async (req, res) => {
-  try {
-    const { id, mahasiswaId, nama_mahasiswa, judul, link, dosenPembimbingId } = req.body;
-
-    if (!id || !mahasiswaId || !nama_mahasiswa || !judul || !link) {
-      return res.status(400).json({ msg: "Semua field wajib diisi." });
+    if (!pengajuanAktif) {
+      return res.status(403).json({ 
+        success: false, 
+        msg: "Akses ditolak. Kamu belum memiliki laporan magang yang disetujui oleh Admin." 
+      });
     }
 
-    const newData = await Logbook.create({
-      id,
-      mahasiswaId,
-      nama_mahasiswa,
-      judul,
-      link,
-      dosenPembimbingId,
+    // 2. Validasi: Cek apakah sudah mengisi logbook di tanggal yang sama (mencegah double input)
+    const existingLog = await Logbook.findOne({
+      where: {
+        pengajuanId: pengajuanAktif.id,
+        tanggal: tanggal
+      }
     });
 
-    res.json(newData);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
+    if (existingLog) {
+      return res.status(400).json({ 
+        success: false, 
+        msg: "Kamu sudah mengisi logbook untuk tanggal ini." 
+      });
+    }
 
-// ===============================
-// 3. DELETE LOGBOOK
-// ===============================
-router.delete("/:id", auth(["admin", "mahasiswa"]), async (req, res) => {
+    // 3. EKSEKUSI: Simpan Logbook
+    const logbaru = await Logbook.create({
+      id: "log-" + Date.now(),
+      pengajuanId: pengajuanAktif.id,
+      mahasiswaId: userId, // Opsional jika di model ada
+      tanggal,
+      kegiatan,
+      progres,
+      status_verifikasi: 'pending' // Default menunggu paraf dosen/admin
+    });
+
+    res.status(201).json({
+      success: true,
+      msg: "Logbook berhasil disimpan!",
+      data: logbaru
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * VERIFIKASI LOGBOOK (Dosen/Admin)
+ * Memberikan paraf atau status verifikasi pada logbook mahasiswa.
+ */
+exports.verifyLogbook = async (req, res) => {
   try {
-    const exists = await Logbook.findOne({ where: { id: req.params.id } });
+    const { id } = req.params; // ID Logbook
+    const { status, catatan } = req.body; // status: 'verified' atau 'revisi'
 
-    if (!exists) {
-      return res.status(404).json({ msg: "Logbook tidak ditemukan." });
-    }
+    const log = await Logbook.findByPk(id);
+    if (!log) return res.status(404).json({ msg: "Logbook tidak ditemukan." });
 
-    await Logbook.destroy({ where: { id: req.params.id } });
+    log.status_verifikasi = status;
+    log.catatan_dosen = catatan; // Pastikan kolom ini ada di model
+    await log.save();
 
-    res.json({ msg: "Logbook berhasil dihapus." });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    res.json({ success: true, msg: `Logbook telah di-${status}` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-});
-//===============================
-// 4. UPDATE FEEDBACK LOGBOOK (Dosen only)
-// ===============================
-router.patch("/:id/feedback", auth("dosen"), async (req, res) => {
+};
+
+/**
+ * GET ALL LOGBOOK (Mahasiswa melihat miliknya sendiri)
+ */
+exports.getLogsByMahasiswa = async (req, res) => {
   try {
-    const { feedback } = req.body;
-    const logbook = await Logbook.findOne({ where: { id: req.params.id } });
-
-    if (!logbook) {
-      return res.status(404).json({ msg: "Logbook tidak ditemukan." });
-    }
-
-    if (logbook.dosenPembimbingId && logbook.dosenPembimbingId !== req.user.id) {
-      return res.status(403).json({ msg: "Tidak memiliki akses ke logbook ini." });
-    }
-
-    logbook.dosenPembimbingId = logbook.dosenPembimbingId || req.user.id;
-    logbook.feedback = feedback;
-    await logbook.save();
-
-    res.json({ msg: "Feedback berhasil disimpan.", data: logbook });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    const userId = req.user.id;
+    const logs = await Logbook.findAll({
+      where: { mahasiswaId: userId },
+      order: [['tanggal', 'DESC']]
+    });
+    res.json({ success: true, data: logs });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-});
-
-module.exports = router;
+};

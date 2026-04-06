@@ -1,22 +1,23 @@
-const User = require('./user');
-const Job = require('./job');
-const Pengajuan = require('./pengajuan');
+const User = require('./User');
+const Job = require('./Job');
+const Pengajuan = require('./Pengajuan');
+const Logbook = require('./Logbook');
+const Nilai = require('./Nilai');
 
-// Relasi Mahasiswa -> Pengajuan
-User.hasMany(Pengajuan, { foreignKey: 'userId' });
+// Relasi Mahasiswa (User) ke Pengajuan
+User.hasMany(Pengajuan, { foreignKey: 'userId', as: 'daftar_pengajuan' });
 Pengajuan.belongsTo(User, { foreignKey: 'userId', as: 'mahasiswa' });
 
-// Relasi Job -> Pengajuan
-Job.hasMany(Pengajuan, { foreignKey: 'jobId' });
+// Relasi Lowongan (Job) ke Pengajuan
+Job.hasMany(Pengajuan, { foreignKey: 'jobId', as: 'pelamar' });
 Pengajuan.belongsTo(Job, { foreignKey: 'jobId', as: 'lowongan' });
 
-// Di models/index.js
-Logbook.belongsTo(User, { foreignKey: 'mahasiswaId', as: 'mahasiswa' });
-Logbook.belongsTo(User, { foreignKey: 'dosenPembimbingId', as: 'pembimbing' });
+// Relasi Pengajuan ke Logbook (Hanya bisa isi logbook jika pengajuan statusnya 'accepted')
+Pengajuan.hasMany(Logbook, { foreignKey: 'pengajuanId', as: 'catatan_harian' });
 Logbook.belongsTo(Pengajuan, { foreignKey: 'pengajuanId' });
 
-// Di models/index.js
-Nilai.belongsTo(User, { foreignKey: 'mahasiswaId', as: 'mahasiswa' });
-Nilai.belongsTo(Pengajuan, { foreignKey: 'pengajuanId', as: 'detail_magang' });
+// Relasi Pengajuan ke Nilai
+Pengajuan.hasOne(Nilai, { foreignKey: 'pengajuanId', as: 'hasil_akhir' });
+Nilai.belongsTo(Pengajuan, { foreignKey: 'pengajuanId' });
 
-module.exports = { User, Job, Pengajuan };
+module.exports = { User, Job, Pengajuan, Logbook, Nilai };
